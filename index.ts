@@ -40,6 +40,7 @@ async function initLogFollower(ws: ServerWebSocket<unknown>): Promise<FollowedFi
       let file = Bun.file(fullFilename);
       const str = await file.text();
       ws.send(str);
+      console.log(`Initial logs sent for: ${fullFilename}`);
     });
   }
 
@@ -71,7 +72,7 @@ Bun.serve({
     // this is called when a message is received
     async message(ws, message) {
       if (message === 'ready') {
-        console.log(`Received ${message}`);
+        console.log(`New client is ${message}`);
         ws.send('hello');
         const startPos = await initLogFollower(ws)
         watch('./logs', (event, filename) => {
@@ -94,11 +95,12 @@ Bun.serve({
                 startPos[fullFilename] = stat.size;
               }
 
-              // TODO: probably some opportunity to just keep the files open?
-              // Need to find some method to detect changes. No idea if that's faster.
               const str = await Bun.file(fullFilename).slice(startPos[fullFilename], stat.size).text();
               startPos[fullFilename] += str.length;
+
+              // TODO: buffer this! big perf impact
               ws.send(str);
+              console.log(`delta logs sent for: ${fullFilename}`);
             });
             console.log(`Detected ${event} in ${fullFilename}`);
           } else {
