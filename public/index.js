@@ -1,33 +1,34 @@
 const MAX_LINES = 5000;
 
-let last = 0;
+let last = -1;
 let ready = false;
 let rows = [];
 let entrypoint = document.getElementById('stuff');
 
 function writeLog(msg) {
-  const lines = msg.split('\n').filter(line => line.length !== 0).slice(-MAX_LINES);
-  lines.forEach((line) => {
-    const text = document.createTextNode(line);
-    // Bootstrap mode
-    if (last < MAX_LINES-1) {
-      rows[last].replaceChildren(text);
-      last += 1;
-    // Slow(probably?), standard mode
-    } else {
-      rows.shift().remove();
-      const d = document.createElement('div');
-      d.replaceChildren(text);
-      entrypoint.append(d);
-      rows.push(d);
-    }
+  msg.forEach((blob) => {
+    console.log(blob)
+    const file = blob.filename;
+    const lines = blob.content.split('\n').filter(line => line.length !== 0).slice(-MAX_LINES);
+    lines.forEach((line) => {
+      if (last === MAX_LINES-1) {
+        for (let i=0; i < MAX_LINES-1; i++) {
+          rows[i].nodeValue = rows[i+1].nodeValue;
+        }
+      } else {
+        last += 1;
+      }
+      rows[last].nodeValue = `${file}: ${line}`;
+    });
   });
 }
 
 for(let i = 0; i < MAX_LINES; i++) {
-  let div = document.createElement('div');
-  rows.push(div);
+  const div = document.createElement('div');
+  const text = document.createTextNode('');
+  div.replaceChildren(text);
   entrypoint.append(div);
+  rows.push(text);
 }
 
 // Create WebSocket connection.
@@ -37,7 +38,7 @@ socket.onmessage = (event) => {
   if (event.data === 'hello') {
     ready = true;
   } else if (ready) {
-    writeLog(event.data)
+    writeLog(JSON.parse(event.data));
   } else {
     logger.error('Got message before ready');
   }

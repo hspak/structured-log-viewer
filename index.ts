@@ -5,6 +5,13 @@ type FollowedFilesStartPos = {
   [filename: string]: number;
 };
 
+type Payload = {
+  payload: {
+    filename: string;
+    content: string;
+  }[];
+}
+
 async function staticFiles() {
   return {
     "/index.html": new Response(await Bun.file("./public/index.html").bytes(), {
@@ -39,7 +46,7 @@ async function initLogFollower(ws: ServerWebSocket<unknown>): Promise<FollowedFi
       startPos[fullFilename] = stat.size;
       let file = Bun.file(fullFilename);
       const str = await file.text();
-      ws.send(str);
+      ws.send(`[${JSON.stringify({filename, content: str})}]`);
       console.log(`Initial logs sent for: ${fullFilename}`);
     });
   }
@@ -99,7 +106,7 @@ Bun.serve({
               startPos[fullFilename] += str.length;
 
               // TODO: buffer this! big perf impact
-              ws.send(str);
+              ws.send(`[${JSON.stringify({filename, content: str})}]`);
               console.log(`delta logs sent for: ${fullFilename}`);
             });
             console.log(`Detected ${event} in ${fullFilename}`);
