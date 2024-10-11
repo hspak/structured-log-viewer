@@ -18,8 +18,13 @@
   margin-left: 0.5rem;
   margin-right: 0.5rem;
   padding: 2px;
+  cursor: pointer;
 }
 
 .attribute-item:hover {
   background-color: #dddddd;
+}
+
+.selected {
+  font-weight: 600;
 }
