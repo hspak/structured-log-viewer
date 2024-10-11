@@ -1,10 +1,25 @@
 .main {
   display: flex;
   flex-direction: row;
-  width: 95vw;
+  width: 90vw;
 }
 
 .column {
   display: flex;
   flex-direction: column;
+  min-width: 150px;
+}
+
+.attribute-header {
+  font-weight: 600;
+  padding: 2px;
+}
+.attribute-item {
+  margin-left: 0.5rem;
+  margin-right: 0.5rem;
+  padding: 2px;
+}
+
+.attribute-item:hover {
+  background-color: #dddddd;
 }

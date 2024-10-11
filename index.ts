@@ -24,6 +24,11 @@ async function staticFiles() {
         "Content-Type": "text/javascript",
       }, 
     }),
+     "/fuse.js": new Response(await Bun.file("./public/fuse.js").bytes(), {
+      headers: {
+        "Content-Type": "text/javascript",
+      }, 
+    }), 
      "/style/index.css": new Response(await Bun.file("./public/style/index.css").bytes(), {
       headers: {
         "Content-Type": "text/css",
@@ -36,8 +41,8 @@ async function initLogFollower(ws: ServerWebSocket<unknown>): Promise<FollowedFi
   let startPos: FollowedFilesStartPos = {};
   const glob = new Glob("*.log");
 
-  for await (const filename of glob.scan({ cwd: './logs' })) {
-    const fullFilename = `./logs/${filename}`;
+  for await (const filename of glob.scan({ cwd: '/home/hsp/.gopm3' })) {
+    const fullFilename = `/home/hsp/.gopm3/${filename}`;
     stat(fullFilename, async (err, stat) => {
       if (err) {
         console.error(`Couldn't read file ${filename}`, err);
@@ -82,8 +87,9 @@ Bun.serve({
         console.log(`New client is ${message}`);
         ws.send('hello');
         const startPos = await initLogFollower(ws)
-        watch('./logs', (event, filename) => {
-          const fullFilename = `./logs/${filename}`;
+        watch('/home/hsp/.gopm3', (event, filename) => {
+          const fullFilename = `/home/hsp/.gopm3/${filename}`;
+          console.log('hi', fullFilename)
           if (fullFilename?.endsWith('.log')) {
             stat(fullFilename, async (err, stat) => {
               if (err) {
@@ -120,4 +126,4 @@ Bun.serve({
     },
   },
 });
-
+console.log('started');
