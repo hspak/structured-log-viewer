@@ -1,6 +1,6 @@
 const MAX_ATTR = 20;
-const MAX_LINES = 5000;
-const MAX_DATA = 100_000;
+const MAX_LINES = 2000;
+const MAX_DATA = 100_000_000;
 
 let last = -1;
 let appState = null;
@@ -27,12 +27,13 @@ let attributes = {
   filename: {}
 };
 
-let filters = [];
+let filters = new Map();
 
 
 const reservedNames = [
   'message',
   'timestamp',
+  'severity',
 ];
 
 fuzzy.oninput = (e) => {
@@ -67,18 +68,12 @@ function accumUniqueAttrs(structuredLog, filename) {
 // TODO: ideally we can filter OR for values within the same attribute, but 
 // AND for across attributes.
 function filter() {
-  const inter = [];
-  for (let i = 0; i < filters.length; i++) {
-    inter.push(rawData.filter((dat) => {
-      const val = filters[i].split(':')
-      const attrName = val[0];
-      const attrVal = val[1];
-      return dat[attrName] === attrVal;
-    }));
-  }
-  filteredData = inter.length > 0 ? inter.flat() : rawData;
+  let inter = [];
+  filters.forEach((attrVal, attrName) => {
+    inter = inter.concat(rawData.filter((dat) => dat[attrName] === attrVal));
+  });
+  filteredData = inter.length > 0 ? inter : rawData;
   fuzzyData = fuzzyVal ? filteredData.filter((data) => data.message.includes(fuzzyVal)) : filteredData;
-  console.log(fuzzyVal, fuzzyData)
 }
  
 function populate(msgs) {
@@ -136,9 +131,9 @@ function renderSidenav() {
 
         const filterKey = valName;
         if (val['meta']) {
-          filters.push(`${attrName}:${filterKey}`);
-        } else {
-          filters = filters.filter(item => !item.endsWith(filterKey));
+          filters.set(attrName, filterKey);
+        } else if (filters.has(attrName)) {
+          filters.delete(attrName, filterKey);
         }
 
         filter();
@@ -152,7 +147,7 @@ function renderSidenav() {
 function render() {
   filter();
 
-  const offset = last > MAX_LINES ? last - MAX_LINES : 0;
+  const offset = last > MAX_LINES && fuzzyData.length===0 ? last - MAX_LINES : 0;
   const cap = Math.min(MAX_LINES, last, fuzzyData.length);
   for (let i=0; i<cap; i++) {
       rows[i].nodeValue = `${fuzzyData[i+offset].timestamp} ${fuzzyData[i+offset].filename}: ${fuzzyData[i+offset].message}`;
@@ -185,7 +180,6 @@ socket.onopen = () => socket.send('ready');
 socket.onmessage = (event) => {
   if (appState) {
     const d = JSON.parse(event.data);
-    console.log(d)
     populate(d);
     render();
   } else if (event.data === 'hello') {

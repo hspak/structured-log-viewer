@@ -21,7 +21,7 @@ let msgs: Payload[] = [];
 
 function formatJson(content: string): Content[] {
   // TODO: handle exceptions
-  const lines = content.split('\n');
+  const lines = content.split('\n').map(line=>line.trim()).filter(line=>line.length>0);
   const contents = [];
   const now = (new Date()).toISOString();
   for (let i=0; i<lines.length; i++) {
@@ -144,7 +144,6 @@ Bun.serve({
                 if (startPos[fullFilename] > stat.size) {
                   startPos[fullFilename] = 0;
                 } else if (startPos[fullFilename] === stat.size) {
-                  console.log('no size change')
                   return;
                 }
               } else {
@@ -155,7 +154,6 @@ Bun.serve({
               startPos[fullFilename] += str.length;
 
               msgs.push({filename: filename!, contents: formatJson(str)});
-              console.log(ws)
               // ws.send(`[${JSON.stringify({filename, content: str})}]`);
               console.log(`delta logs sent for: ${fullFilename}`);
             });
@@ -182,7 +180,8 @@ setInterval(() => {
   }
   if (socket && batch.length > 0) {
     socket.send(JSON.stringify(batch));
+    console.log(`batch sent msgs ${batch.length}`);
   }
-}, 16);
+}, 100);
 
 console.log('started');
