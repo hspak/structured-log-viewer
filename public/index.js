@@ -2,7 +2,7 @@ const MAX_ATTR = 20;
 const MAX_LINES = 2000;
 const MAX_DATA = 100_000_000;
 
-let last = -1;
+let last = 0;
 let appState = null;
 let rows = [];
 let rawData = [];
@@ -88,16 +88,10 @@ function populate(msgs) {
         ...content,
       });
 
+      // TODO: find some fallback if we exceed MAX_DATA
       lines.forEach((line) => {
-        if (last === MAX_DATA-1) {
-          // TODO: this is probably slow
-          for (let i=0; i < MAX_DATA-1; i++) {
-            rawData[i] = rawData[i+1];
-          }
-        } else {
-          last += 1;
-        }
         rawData[last] = line;
+        last += 1;
       });
     });
   });
