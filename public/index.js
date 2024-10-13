@@ -136,7 +136,6 @@ function renderSidenav() {
           filters.delete(attrName, filterKey);
         }
 
-        filter();
         render();
       };
       attrRows[i].append(div);
