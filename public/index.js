@@ -5,11 +5,14 @@ const MAX_DATA = 100_000;
 let last = -1;
 let appState = null;
 let rows = [];
-let data = [];
+let rawData = [];
 let filteredData = [];
+let fuzzyData = [];
 let entrypoint = document.getElementById('stuff');
 
 let sidenav = document.getElementById('attributes');
+let fuzzy = document.getElementById('searchinput');
+let fuzzyVal = "";
 let attrRows = [];
 
 // {
@@ -31,6 +34,11 @@ const reservedNames = [
   'message',
   'timestamp',
 ];
+
+fuzzy.oninput = (e) => {
+  fuzzyVal = e.target.value;
+  render();
+};
 
 function accumUniqueAttrs(structuredLog, filename) {
   for (const key in structuredLog) {
@@ -61,17 +69,18 @@ function accumUniqueAttrs(structuredLog, filename) {
 function filter() {
   const inter = [];
   for (let i = 0; i < filters.length; i++) {
-    inter.push(data.filter((dat) => {
+    inter.push(rawData.filter((dat) => {
       const val = filters[i].split(':')
       const attrName = val[0];
       const attrVal = val[1];
       return dat[attrName] === attrVal;
     }));
   }
-  filteredData = inter.flat();
+  filteredData = inter.length > 0 ? inter.flat() : rawData;
+  fuzzyData = fuzzyVal ? filteredData.filter((data) => data.message.includes(fuzzyVal)) : filteredData;
+  console.log(fuzzyVal, fuzzyData)
 }
  
-
 function populate(msg) {
   msg.forEach((blob) => {
     const file = blob.filename;
@@ -101,22 +110,16 @@ function populate(msg) {
       if (last === MAX_DATA-1) {
         // TODO: this is probably slow
         for (let i=0; i < MAX_DATA-1; i++) {
-          data[i] = data[i+1];
+          rawData[i] = rawData[i+1];
         }
       } else {
         last += 1;
       }
-      data[last] = line;
+      rawData[last] = line;
     });
   }); 
-
-  filter();
 }
 
-const options = {
-  keys: ['message', 'filename'],
-};
-const fuse = new Fuse(data);
 
 function renderSidenav() {
   Object.entries(attributes).forEach(([attrName, values], i) => {
@@ -159,26 +162,19 @@ function renderSidenav() {
 }
 
 function render() {
-  if (filters.length > 0) {
-    const len = filteredData.length;
-    const offset = len > MAX_LINES ? len - MAX_LINES : 0;
-    const cap = Math.min(MAX_LINES, len);
-    for (let i=0; i<cap; i++) {
-        rows[i].nodeValue = `${filteredData[i+offset].timestamp} ${filteredData[i+offset].filename}: ${filteredData[i+offset].message}`;
-    } 
+  filter();
 
-    // Clear
-    const fullCap = Math.min(MAX_LINES, last);
-    for (let i=len; i<fullCap; i++) {
-        rows[i].nodeValue = ``;
-    } 
-  } else {
-    const offset = last > MAX_LINES ? last - MAX_LINES : 0;
-    const cap = Math.min(MAX_LINES, last);
-    for (let i=0; i<cap; i++) {
-        rows[i].nodeValue = `${data[i+offset].timestamp} ${data[i+offset].filename}: ${data[i+offset].message}`;
-    }
+  const offset = last > MAX_LINES ? last - MAX_LINES : 0;
+  const cap = Math.min(MAX_LINES, last, fuzzyData.length);
+  for (let i=0; i<cap; i++) {
+      rows[i].nodeValue = `${fuzzyData[i+offset].timestamp} ${fuzzyData[i+offset].filename}: ${fuzzyData[i+offset].message}`;
   }
+
+  // Clear
+  const fullCap = Math.min(MAX_LINES, last);
+  for (let i=cap; i<fullCap; i++) {
+      rows[i].nodeValue = ``;
+  }  
   renderSidenav();
 }
 
@@ -201,7 +197,7 @@ socket.onopen = () => socket.send('ready');
 socket.onmessage = (event) => {
   if (appState) {
     const d = JSON.parse(event.data);
-    data.push(d)
+    rawData.push(d)
     populate(d);
     render();
   } else if (event.data === 'hello') {

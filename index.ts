@@ -24,11 +24,6 @@ async function staticFiles() {
         "Content-Type": "text/javascript",
       }, 
     }),
-     "/fuse.js": new Response(await Bun.file("./public/fuse.js").bytes(), {
-      headers: {
-        "Content-Type": "text/javascript",
-      }, 
-    }), 
      "/style/index.css": new Response(await Bun.file("./public/style/index.css").bytes(), {
       headers: {
         "Content-Type": "text/css",
