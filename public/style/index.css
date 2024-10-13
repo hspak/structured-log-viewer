@@ -19,12 +19,22 @@
   margin-right: 0.5rem;
   padding: 2px;
   cursor: pointer;
+  font-size: 14px;
 }
 
-.attribute-item:hover {
+.attribute-item:hover, .message-line:hover {
   background-color: #dddddd;
 }
 
 .selected {
   font-weight: 600;
+}
+
+.message-line {
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.message-details {
+  margin-left: 8px; 
 }

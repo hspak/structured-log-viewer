@@ -1,6 +1,5 @@
 const MAX_ATTR = 20;
 const MAX_LINES = 2000;
-const MAX_DATA = 100_000_000;
 
 let last = 0;
 let appState = null;
@@ -33,7 +32,7 @@ let filters = new Map();
 const reservedNames = [
   'message',
   'timestamp',
-  'severity',
+  'filename',
 ];
 
 fuzzy.oninput = (e) => {
@@ -104,7 +103,7 @@ function renderSidenav() {
 
     const div = document.createElement('div');
     const text = document.createTextNode(attrName);
-    div.classList.add('attribute-header')
+    div.classList.add('attribute-header');
     div.append(text);
     attrRows[i].append(div);
     Object.entries(values).forEach(([valName, val]) => {
@@ -143,7 +142,12 @@ function render() {
   const offset = last > MAX_LINES && fuzzyData.length===0 ? last - MAX_LINES : 0;
   const cap = Math.min(MAX_LINES, last, fuzzyData.length);
   for (let i=0; i<cap; i++) {
-      rows[i].nodeValue = `${fuzzyData[i+offset].timestamp} ${fuzzyData[i+offset].filename}: ${fuzzyData[i+offset].message}`;
+      rows[i].nodeValue = `${fuzzyData[i+offset].severity}: ${fuzzyData[i+offset].timestamp} ${fuzzyData[i+offset].filename}: ${fuzzyData[i+offset].message}`;
+      Object.entries(fuzzyData[i+offset]).forEach(([key, val]) => {
+        if (!reservedNames.includes(key)) {
+          rows[i].parentNode.setAttribute(`data-${key}`, val);
+        }
+      });
   }
 
   // Clear
@@ -158,6 +162,24 @@ for(let i = 0; i < MAX_LINES; i++) {
   const div = document.createElement('div');
   const text = document.createTextNode('');
   div.replaceChildren(text);
+  div.classList.add('message-line');
+  div.onclick = (e) => { 
+    const isOpen = div.classList.contains('selected');
+    if (!isOpen) {
+      div.classList.add('selected');
+      const dataAttrs = e.target.getAttributeNames().filter((attr) => attr.startsWith('data-'));
+      dataAttrs.forEach((attr) => {
+        const elem = document.createElement('div');
+        const text = document.createTextNode(`${attr.substring(5)}: ${e.target.getAttribute(attr)}`);
+        elem.replaceChildren(text);
+        elem.classList.add('message-details');
+        div.appendChild(elem);
+      }); 
+    } else {
+      div.classList.remove('selected');
+      div.replaceChildren(text);
+    }
+  };
   entrypoint.append(div);
   rows.push(text);
 }
