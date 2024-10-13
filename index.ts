@@ -5,11 +5,56 @@ type FollowedFilesStartPos = {
   [filename: string]: number;
 };
 
+type Content = {
+  message: string;
+  timestamp: string;
+  severity: string;
+};        
+
 type Payload = {
-  payload: {
-    filename: string;
-    content: string;
-  }[];
+  filename: string;
+  contents: Content[];
+}
+
+let socket: ServerWebSocket<unknown> | null = null;
+let msgs: Payload[] = [];
+
+function formatJson(content: string): Content[] {
+  // TODO: handle exceptions
+  const lines = content.split('\n');
+  const contents = [];
+  const now = (new Date()).toISOString();
+  for (let i=0; i<lines.length; i++) {
+    if (!lines[i].startsWith('{')) {
+      contents.push({
+        message: lines[i],
+        timestamp: now,
+        severity: 'info',
+      });   
+      continue;
+    }
+    try {
+      const obj = JSON.parse(lines[i]);
+      if ('message' in obj && 'timestamp' in obj && 'severity' in obj) {
+        contents.push(obj);
+        continue;
+      } else {
+        contents.push({
+          message: lines[i],
+          timestamp: 'timestamp' in obj ? obj['timestamp'] : now,
+          severity: 'severity' in obj ? obj['severity'] : now,
+        });   
+      }
+    } catch (e){
+      console.error(e);
+    }
+    contents.push({
+      message: lines[i],
+      timestamp: now,
+      severity: 'info',
+    });  
+  }
+  return contents;
 }
 
 async function staticFiles() {
@@ -46,7 +91,8 @@ async function initLogFollower(ws: ServerWebSocket<unknown>): Promise<FollowedFi
       startPos[fullFilename] = stat.size;
       let file = Bun.file(fullFilename);
       const str = await file.text();
-      ws.send(`[${JSON.stringify({filename, content: str})}]`);
+      // ws.send(`[${JSON.stringify({filename, content: str})}]`);
+      ws.send(JSON.stringify([{ filename, contents: formatJson(str)}]));
       console.log(`Initial logs sent for: ${fullFilename}`);
     });
   }
@@ -78,13 +124,15 @@ Bun.serve({
   websocket: {
     // this is called when a message is received
     async message(ws, message) {
+      if (socket === null) {
+        socket = ws;
+      }
       if (message === 'ready') {
         console.log(`New client is ${message}`);
         ws.send('hello');
         const startPos = await initLogFollower(ws)
         watch('/home/hsp/.gopm3', (event, filename) => {
           const fullFilename = `/home/hsp/.gopm3/${filename}`;
-          console.log('hi', fullFilename)
           if (fullFilename?.endsWith('.log')) {
             stat(fullFilename, async (err, stat) => {
               if (err) {
@@ -106,8 +154,9 @@ Bun.serve({
               const str = await Bun.file(fullFilename).slice(startPos[fullFilename], stat.size).text();
               startPos[fullFilename] += str.length;
 
-              // TODO: buffer this! big perf impact
-              ws.send(`[${JSON.stringify({filename, content: str})}]`);
+              msgs.push({filename: filename!, contents: formatJson(str)});
+              console.log(ws)
+              // ws.send(`[${JSON.stringify({filename, content: str})}]`);
               console.log(`delta logs sent for: ${fullFilename}`);
             });
             console.log(`Detected ${event} in ${fullFilename}`);
@@ -121,4 +170,19 @@ Bun.serve({
     },
   },
 });
+
+// Batch send messages so the client has an easier time.
+setInterval(() => {
+  const batch: Payload[] = [];
+  while (msgs.length > 0) {
+    const msg = msgs.shift();
+    if (msg) {
+      batch.push({ filename: msg.filename, contents: msg.contents });
+    }
+  }
+  if (socket && batch.length > 0) {
+    socket.send(JSON.stringify(batch));
+  }
+}, 16);
+
 console.log('started');

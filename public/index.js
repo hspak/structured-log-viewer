@@ -81,43 +81,31 @@ function filter() {
   console.log(fuzzyVal, fuzzyData)
 }
  
-function populate(msg) {
-  msg.forEach((blob) => {
-    const file = blob.filename;
-    let lines = [];
+function populate(msgs) {
+  msgs.forEach((msg) => {
+    const file = msg.filename;
+    msg.contents.forEach((content) => {
+      let lines = [];
 
-    const logLines = blob.content.split('\n').map(line => line.trim()).filter(line => line !== '');
-    logLines.forEach((logLine) => {
-      // TODO: Maybe ensure all log lines conform from server side.
-      try {
-        const structuredLog = JSON.parse(logLine);
-        accumUniqueAttrs(structuredLog, file);
-        lines.push({
-          filename: file,
-          ...structuredLog,
-        });
-      } catch (e) {
-        console.error(e)
-        lines.push({
-          filename: file, 
-          message: logLine,
-          timestamp: '???',
-        });
-      }
-    });
+      accumUniqueAttrs(content, file);
+      lines.push({
+        filename: file,
+        ...content,
+      });
 
-    lines.forEach((line) => {
-      if (last === MAX_DATA-1) {
-        // TODO: this is probably slow
-        for (let i=0; i < MAX_DATA-1; i++) {
-          rawData[i] = rawData[i+1];
+      lines.forEach((line) => {
+        if (last === MAX_DATA-1) {
+          // TODO: this is probably slow
+          for (let i=0; i < MAX_DATA-1; i++) {
+            rawData[i] = rawData[i+1];
+          }
+        } else {
+          last += 1;
         }
-      } else {
-        last += 1;
-      }
-      rawData[last] = line;
+        rawData[last] = line;
+      });
     });
-  }); 
+  });
 }
 
 
@@ -197,7 +185,7 @@ socket.onopen = () => socket.send('ready');
 socket.onmessage = (event) => {
   if (appState) {
     const d = JSON.parse(event.data);
-    rawData.push(d)
+    console.log(d)
     populate(d);
     render();
   } else if (event.data === 'hello') {
