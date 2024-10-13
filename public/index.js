@@ -56,13 +56,19 @@ function accumUniqueAttrs(structuredLog, filename) {
   }
 }
 
-// TODO: incomplete
+// TODO: ideally we can filter OR for values within the same attribute, but 
+// AND for across attributes.
 function filter() {
-  if (filters.length > 0) {
-    filteredData = data.filter((dat) => {
-      return dat.filename == filters[0]
-    });
+  const inter = [];
+  for (let i = 0; i < filters.length; i++) {
+    inter.push(data.filter((dat) => {
+      const val = filters[i].split(':')
+      const attrName = val[0];
+      const attrVal = val[1];
+      return dat[attrName] === attrVal;
+    }));
   }
+  filteredData = inter.flat();
 }
  
 
@@ -139,12 +145,12 @@ function renderSidenav() {
 
         const filterKey = valName;
         if (val['meta']) {
-          filters.push(filterKey);
+          filters.push(`${attrName}:${filterKey}`);
         } else {
-          filters = filters.filter(item => item != filterKey);
+          filters = filters.filter(item => !item.endsWith(filterKey));
         }
 
-        console.log(filterKey)
+        filter();
         render();
       };
       attrRows[i].append(div);
@@ -155,7 +161,6 @@ function renderSidenav() {
 function render() {
   if (filters.length > 0) {
     const len = filteredData.length;
-    console.log('filtered', len)
     const offset = len > MAX_LINES ? len - MAX_LINES : 0;
     const cap = Math.min(MAX_LINES, len);
     for (let i=0; i<cap; i++) {
@@ -168,7 +173,6 @@ function render() {
         rows[i].nodeValue = ``;
     } 
   } else {
-    console.log('all')
     const offset = last > MAX_LINES ? last - MAX_LINES : 0;
     const cap = Math.min(MAX_LINES, last);
     for (let i=0; i<cap; i++) {
