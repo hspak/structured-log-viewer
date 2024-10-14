@@ -1,5 +1,5 @@
 const MAX_ATTR = 20;
-const MAX_LINES = 100;
+const MAX_LINES = 2000;
 
 let last = 0;
 let appState = null;
