@@ -9,7 +9,7 @@ type Content = {
   message: string;
   timestamp: string;
   severity: string;
-};        
+};
 
 type Payload = {
   filename: string;
@@ -29,8 +29,8 @@ function formatJson(content: string): Content[] {
       contents.push({
         message: lines[i],
         timestamp: now,
-        severity: 'info',
-      });   
+        severity: 'INFO',
+      });
       continue;
     }
     try {
@@ -43,16 +43,16 @@ function formatJson(content: string): Content[] {
           message: lines[i],
           timestamp: 'timestamp' in obj ? obj['timestamp'] : now,
           severity: 'severity' in obj ? obj['severity'] : now,
-        });   
+        });
       }
     } catch (e){
-      console.error(e);
+      // console.error(e);
     }
     contents.push({
       message: lines[i],
       timestamp: now,
-      severity: 'info',
-    });  
+      severity: 'INFO',
+    });
   }
   return contents;
 }
@@ -67,13 +67,13 @@ async function staticFiles() {
      "/index.js": new Response(await Bun.file("./public/index.js").bytes(), {
       headers: {
         "Content-Type": "text/javascript",
-      }, 
+      },
     }),
      "/style/index.css": new Response(await Bun.file("./public/style/index.css").bytes(), {
       headers: {
         "Content-Type": "text/css",
-      }, 
-    }), 
+      },
+    }),
   };
 }
 
@@ -81,8 +81,8 @@ async function initLogFollower(ws: ServerWebSocket<unknown>): Promise<FollowedFi
   let startPos: FollowedFilesStartPos = {};
   const glob = new Glob("*.log");
 
-  for await (const filename of glob.scan({ cwd: '/home/hsp/.gopm3' })) {
-    const fullFilename = `/home/hsp/.gopm3/${filename}`;
+  for await (const filename of glob.scan({ cwd: '/Users/hsp/.gopm3' })) {
+    const fullFilename = `/Users/hsp/.gopm3/${filename}`;
     stat(fullFilename, async (err, stat) => {
       if (err) {
         console.error(`Couldn't read file ${filename}`, err);
@@ -101,7 +101,7 @@ async function initLogFollower(ws: ServerWebSocket<unknown>): Promise<FollowedFi
 }
 
 Bun.serve({
-  port: 8000,
+  port: 8080,
   static: await staticFiles(),
   async fetch(req, server) {
     const url = new URL(req.url);
@@ -130,9 +130,9 @@ Bun.serve({
       if (message === 'ready') {
         console.log(`New client is ${message}`);
         ws.send('hello');
-        const startPos = await initLogFollower(ws)
-        watch('/home/hsp/.gopm3', (event, filename) => {
-          const fullFilename = `/home/hsp/.gopm3/${filename}`;
+        const startPos = await initLogFollower(ws);
+        watch('/Users/hsp/.gopm3', (event, filename) => {
+          const fullFilename = `/Users/hsp/.gopm3/${filename}`;
           if (fullFilename?.endsWith('.log')) {
             stat(fullFilename, async (err, stat) => {
               if (err) {
@@ -143,7 +143,7 @@ Bun.serve({
               if (fullFilename in startPos) {
                 if (startPos[fullFilename] > stat.size) {
                   startPos[fullFilename] = 0;
-                  ws.send("clear");
+                  // ws.send("clear");
                 } else if (startPos[fullFilename] === stat.size) {
                   return;
                 }
@@ -155,14 +155,13 @@ Bun.serve({
               startPos[fullFilename] += str.length;
 
               msgs.push({filename: filename!, contents: formatJson(str)});
-              // ws.send(`[${JSON.stringify({filename, content: str})}]`);
               console.log(`delta logs sent for: ${fullFilename}`);
             });
             console.log(`Detected ${event} in ${fullFilename}`);
           } else {
             console.log(`Ignoring non-log file: ${fullFilename}`);
           }
-        }); 
+        });
       } else {
         console.warn(`Received unsupported message: ${message}`);
       }

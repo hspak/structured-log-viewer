@@ -1,13 +1,17 @@
 .main {
   display: flex;
   flex-direction: row;
-  width: 90vw;
+  width: 98vw;
+  height: 100vh;
 }
 
-.column {
-  display: flex;
+.sidenav {
   flex-direction: column;
-  min-width: 150px;
+  max-width: 12vw;
+}
+
+.content {
+  flex-direction: column;
 }
 
 .attribute-header {
@@ -20,6 +24,10 @@
   padding: 2px;
   cursor: pointer;
   font-size: 14px;
+
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .attribute-item:hover, .message-line:hover {
@@ -31,18 +39,25 @@
 }
 
 .message-line {
-  font-size: 14px;
+  font-family: monospace;
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 86vw;
 }
 
 .message-details {
-  margin-left: 8px; 
+  margin-left: 8px;
 }
 
 .toggle {
   padding: 0;
   margin: 0 4px 0 0;
+  font-family: monospace;
+  user-select: none;
 }
 
 .toggle-hide {
-  visibility: hidden;
+  display: none;
 }

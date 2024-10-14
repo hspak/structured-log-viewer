@@ -64,17 +64,17 @@ function accumUniqueAttrs(structuredLog, filename) {
   }
 }
 
-// TODO: ideally we can filter OR for values within the same attribute, but 
+// TODO: ideally we can filter OR for values within the same attribute, but
 // AND for across attributes.
 function filter() {
   let inter = [];
   filters.forEach((attrVal, attrName) => {
-    inter = inter.concat(rawData.filter((dat) => dat[attrName] === attrVal));
+    inter = rawData.filter((dat) => dat[attrName] === attrVal);
   });
   filteredData = inter.length > 0 ? inter : rawData;
   fuzzyData = fuzzyVal ? filteredData.filter((data) => data.message.toLowerCase().includes(fuzzyVal)) : filteredData;
 }
- 
+
 function populate(msgs) {
   msgs.forEach((msg) => {
     const file = msg.filename;
@@ -115,7 +115,7 @@ function renderSidenav() {
       const text = document.createTextNode(`${valName}: ${val.count}`);
       div.classList.add('attribute-item')
       div.append(text);
-      div.onclick = () => { 
+      div.onclick = () => {
         if ('meta' in val) {
           val['meta'] = !val['meta'];
         } else {
@@ -128,7 +128,6 @@ function renderSidenav() {
         } else if (filters.has(attrName)) {
           filters.delete(attrName, filterKey);
         }
-
         render();
       };
       attrRows[i].append(div);
@@ -142,10 +141,11 @@ function render() {
   const offset = last > MAX_LINES && fuzzyData.length === rawData.length ? last - MAX_LINES : 0;
   const cap = Math.min(MAX_LINES, last, fuzzyData.length);
   for (let i=0; i<cap; i++) {
-      rows[i].nodeValue = `${fuzzyData[i+offset].severity}: ${fuzzyData[i+offset].timestamp} ${fuzzyData[i+offset].filename}: ${fuzzyData[i+offset].message}`;
+      rows[i].nodeValue = `${fuzzyData[i+offset].filename}: ${fuzzyData[i+offset].severity} ${fuzzyData[i+offset].timestamp}: ${fuzzyData[i+offset].message}`;
       Object.entries(fuzzyData[i+offset]).forEach(([key, val]) => {
         if (!reservedNames.includes(key)) {
-          rows[i].parentNode.setAttribute(`data-${key}`, val);
+          const keySanitized = key.replace(/[^a-zA-Z\-]/g, '-');
+          rows[i].parentNode.setAttribute(`data-${keySanitized}`, val);
           rows[i].parentNode.childNodes[0].classList.remove('toggle-hide');
         }
       });
@@ -156,7 +156,7 @@ function render() {
   for (let i=cap; i<fullCap; i++) {
       rows[i].nodeValue = ``;
       rows[i].parentNode.childNodes[0].classList.add('toggle-hide');
-  }  
+  }
   renderSidenav();
 }
 
@@ -171,7 +171,7 @@ for(let i = 0; i < MAX_LINES; i++) {
   div.append(toggle, text);
 
   div.classList.add('message-line');
-  toggle.onclick = (e) => { 
+  toggle.onclick = (e) => {
     const line = e.target.parentNode;
     const isOpen = div.classList.contains('selected');
     if (!isOpen) {
@@ -184,7 +184,7 @@ for(let i = 0; i < MAX_LINES; i++) {
         elem.replaceChildren(text);
         elem.classList.add('message-details');
         div.appendChild(elem);
-      }); 
+      });
     } else {
       e.target.childNodes[0].nodeValue = 'show';
       div.classList.remove('selected');
@@ -201,7 +201,7 @@ for(let i = 0; i < MAX_ATTR; i++) {
   attrRows.push(div);
 }
 
-const socket = new WebSocket('ws://localhost:8000/socket');
+const socket = new WebSocket('ws://localhost:8080/socket');
 socket.onopen = () => socket.send('ready');
 socket.onmessage = (event) => {
   if (appState) {
