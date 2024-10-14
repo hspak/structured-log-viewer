@@ -31,10 +31,18 @@
 }
 
 .message-line {
-  cursor: pointer;
   font-size: 14px;
 }
 
 .message-details {
   margin-left: 8px; 
+}
+
+.toggle {
+  padding: 0;
+  margin: 0 4px 0 0;
+}
+
+.toggle-hide {
+  visibility: hidden;
 }

@@ -1,5 +1,5 @@
 const MAX_ATTR = 20;
-const MAX_LINES = 2000;
+const MAX_LINES = 100;
 
 let last = 0;
 let appState = null;
@@ -72,7 +72,7 @@ function filter() {
     inter = inter.concat(rawData.filter((dat) => dat[attrName] === attrVal));
   });
   filteredData = inter.length > 0 ? inter : rawData;
-  fuzzyData = fuzzyVal ? filteredData.filter((data) => data.message.includes(fuzzyVal)) : filteredData;
+  fuzzyData = fuzzyVal ? filteredData.filter((data) => data.message.toLowerCase().includes(fuzzyVal)) : filteredData;
 }
  
 function populate(msgs) {
@@ -139,13 +139,14 @@ function renderSidenav() {
 function render() {
   filter();
 
-  const offset = last > MAX_LINES && fuzzyData.length===0 ? last - MAX_LINES : 0;
+  const offset = last > MAX_LINES && fuzzyData.length === rawData.length ? last - MAX_LINES : 0;
   const cap = Math.min(MAX_LINES, last, fuzzyData.length);
   for (let i=0; i<cap; i++) {
       rows[i].nodeValue = `${fuzzyData[i+offset].severity}: ${fuzzyData[i+offset].timestamp} ${fuzzyData[i+offset].filename}: ${fuzzyData[i+offset].message}`;
       Object.entries(fuzzyData[i+offset]).forEach(([key, val]) => {
         if (!reservedNames.includes(key)) {
           rows[i].parentNode.setAttribute(`data-${key}`, val);
+          rows[i].parentNode.childNodes[0].classList.remove('toggle-hide');
         }
       });
   }
@@ -154,6 +155,7 @@ function render() {
   const fullCap = Math.min(MAX_LINES, last);
   for (let i=cap; i<fullCap; i++) {
       rows[i].nodeValue = ``;
+      rows[i].parentNode.childNodes[0].classList.add('toggle-hide');
   }  
   renderSidenav();
 }
@@ -161,23 +163,32 @@ function render() {
 for(let i = 0; i < MAX_LINES; i++) {
   const div = document.createElement('div');
   const text = document.createTextNode('');
-  div.replaceChildren(text);
+
+  const toggle = document.createElement('button');
+  const toggleText = document.createTextNode('show');
+  toggle.classList.add('toggle');
+  toggle.appendChild(toggleText);
+  div.append(toggle, text);
+
   div.classList.add('message-line');
-  div.onclick = (e) => { 
+  toggle.onclick = (e) => { 
+    const line = e.target.parentNode;
     const isOpen = div.classList.contains('selected');
     if (!isOpen) {
       div.classList.add('selected');
-      const dataAttrs = e.target.getAttributeNames().filter((attr) => attr.startsWith('data-'));
+      const dataAttrs = line.getAttributeNames().filter((attr) => attr.startsWith('data-'));
       dataAttrs.forEach((attr) => {
+        e.target.childNodes[0].nodeValue = 'hide';
         const elem = document.createElement('div');
-        const text = document.createTextNode(`${attr.substring(5)}: ${e.target.getAttribute(attr)}`);
+        const text = document.createTextNode(`${attr.substring(5)}: ${line.getAttribute(attr)}`);
         elem.replaceChildren(text);
         elem.classList.add('message-details');
         div.appendChild(elem);
       }); 
     } else {
+      e.target.childNodes[0].nodeValue = 'show';
       div.classList.remove('selected');
-      div.replaceChildren(text);
+      div.replaceChildren(toggle, text);
     }
   };
   entrypoint.append(div);

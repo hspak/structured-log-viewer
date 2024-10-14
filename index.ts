@@ -143,6 +143,7 @@ Bun.serve({
               if (fullFilename in startPos) {
                 if (startPos[fullFilename] > stat.size) {
                   startPos[fullFilename] = 0;
+                  ws.send("clear");
                 } else if (startPos[fullFilename] === stat.size) {
                   return;
                 }
