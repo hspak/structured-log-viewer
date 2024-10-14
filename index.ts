@@ -21,7 +21,7 @@ let msgs: Payload[] = [];
 
 function formatJson(content: string): Content[] {
   // TODO: handle exceptions
-  const lines = content.split('\n').map(line=>line.trim()).filter(line=>line.length>0);
+  const lines = content.split('\n').map(line=>line.replace(/[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g, '').trim()).filter(line=>line.length>0);
   const contents = [];
   const now = (new Date()).toISOString();
   for (let i=0; i<lines.length; i++) {
