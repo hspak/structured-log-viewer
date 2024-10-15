@@ -1,5 +1,21 @@
 import { watch, stat } from "fs";
 import { Glob, type ServerWebSocket } from 'bun';
+import { parseArgs } from "util";
+
+const { values } = parseArgs({
+  args: Bun.argv,
+  options: {
+    logs: {
+      type: 'string',
+    },
+  },
+  strict: true,
+  allowPositionals: true,
+});
+if (!values.logs) {
+  console.error('--logs required (path to logs dir)');
+  process.exit(1);
+}
 
 type FollowedFilesStartPos = {
   [filename: string]: number;
@@ -81,8 +97,8 @@ async function initLogFollower(ws: ServerWebSocket<unknown>): Promise<FollowedFi
   let startPos: FollowedFilesStartPos = {};
   const glob = new Glob("*.log");
 
-  for await (const filename of glob.scan({ cwd: '/Users/hsp/.gopm3' })) {
-    const fullFilename = `/Users/hsp/.gopm3/${filename}`;
+  for await (const filename of glob.scan({ cwd: values.logs })) {
+    const fullFilename = `${values.logs}/${filename}`;
     stat(fullFilename, async (err, stat) => {
       if (err) {
         console.error(`Couldn't read file ${filename}`, err);
@@ -131,8 +147,8 @@ Bun.serve({
         console.log(`New client is ${message}`);
         ws.send('hello');
         const startPos = await initLogFollower(ws);
-        watch('/Users/hsp/.gopm3', (event, filename) => {
-          const fullFilename = `/Users/hsp/.gopm3/${filename}`;
+        watch(values.logs as string, (event, filename) => {
+          const fullFilename = `${values.logs}/${filename}`;
           if (fullFilename?.endsWith('.log')) {
             stat(fullFilename, async (err, stat) => {
               if (err) {
