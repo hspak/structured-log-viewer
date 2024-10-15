@@ -115,7 +115,10 @@ function renderSidenav() {
       const text = document.createTextNode(`${valName}: ${val.count}`);
       div.classList.add('attribute-item')
       div.append(text);
-      div.onclick = () => {
+      div.onclick = (e) => {
+        e.target.disabled = true;
+        setTimeout(() => {e.target.disabled = false}, 200);
+
         if ('meta' in val) {
           val['meta'] = !val['meta'];
         } else {
@@ -141,37 +144,70 @@ function render() {
   const offset = last > MAX_LINES && fuzzyData.length === rawData.length ? last - MAX_LINES : 0;
   const cap = Math.min(MAX_LINES, last, fuzzyData.length);
   for (let i=0; i<cap; i++) {
-      rows[i].nodeValue = `${fuzzyData[i+offset].filename}: ${fuzzyData[i+offset].severity} ${fuzzyData[i+offset].timestamp}: ${fuzzyData[i+offset].message}`;
-      Object.entries(fuzzyData[i+offset]).forEach(([key, val]) => {
-        if (!reservedNames.includes(key)) {
-          const keySanitized = key.replace(/[^a-zA-Z\-]/g, '-');
-          rows[i].parentNode.setAttribute(`data-${keySanitized}`, val);
-          rows[i].parentNode.childNodes[0].classList.remove('toggle-hide');
-        }
-      });
+    const datum = fuzzyData[i+offset];
+    rows[i].childNodes[1].childNodes[0].nodeValue = `${datum.filename}: `;
+    rows[i].childNodes[2].childNodes[0].nodeValue = datum.severity;
+    rows[i].childNodes[3].childNodes[0].nodeValue = `${datum.timestamp.substring(0,23)}: `;
+    rows[i].childNodes[4].childNodes[0].nodeValue = datum.message;
+
+    if (datum.severity === 'DEBUG') {
+      rows[i].childNodes[2].className = 'severity-debug';
+    } else if (datum.severity === 'WARNING') {
+      rows[i].childNodes[2].className = 'severity-warning';
+    } else if (datum.severity === 'ERROR') {
+      rows[i].childNodes[2].className = 'severity-error';
+    } else {
+      rows[i].childNodes[2].className = 'severity-info';
+    }
+
+    Object.entries(datum).forEach(([key, val]) => {
+      if (!reservedNames.includes(key)) {
+        const keySanitized = key.replace(/[^a-zA-Z\-]/g, '-');
+        rows[i].setAttribute(`data-${keySanitized}`, val);
+        rows[i].classList.remove('hide');
+      }
+    });
   }
 
   // Clear
   const fullCap = Math.min(MAX_LINES, last);
   for (let i=cap; i<fullCap; i++) {
-      rows[i].nodeValue = ``;
-      rows[i].parentNode.childNodes[0].classList.add('toggle-hide');
+      rows[i].classList.add('hide');
   }
   renderSidenav();
 }
 
 for(let i = 0; i < MAX_LINES; i++) {
   const div = document.createElement('div');
-  const text = document.createTextNode('');
 
   const toggle = document.createElement('button');
   const toggleText = document.createTextNode('show');
-  toggle.classList.add('toggle');
+  toggle.classList.add('toggle', 'toggle-hide');
   toggle.appendChild(toggleText);
-  div.append(toggle, text);
+
+  const filename = document.createElement('span');
+  const filenameText = document.createTextNode('');
+  filename.appendChild(filenameText);
+
+  const sev = document.createElement('span');
+  const sevText = document.createTextNode('');
+  sev.appendChild(sevText);
+
+  const timestamp = document.createElement('span');
+  const timestampText = document.createTextNode('');
+  timestamp.appendChild(timestampText);
+
+  const message = document.createElement('span');
+  const messageText = document.createTextNode('');
+  message.appendChild(messageText);
+
+  div.append(toggle, filename, sev, timestamp, message);
 
   div.classList.add('message-line');
   toggle.onclick = (e) => {
+    e.target.disabled = true;
+    setTimeout(() => {e.target.disabled = false}, 200);
+    
     const line = e.target.parentNode;
     const isOpen = div.classList.contains('selected');
     if (!isOpen) {
@@ -188,11 +224,11 @@ for(let i = 0; i < MAX_LINES; i++) {
     } else {
       e.target.childNodes[0].nodeValue = 'show';
       div.classList.remove('selected');
-      div.replaceChildren(toggle, text);
+      div.replaceChildren(toggle, filename, sev, timestamp, message);
     }
   };
   entrypoint.append(div);
-  rows.push(text);
+  rows.push(div);
 }
 
 for(let i = 0; i < MAX_ATTR; i++) {

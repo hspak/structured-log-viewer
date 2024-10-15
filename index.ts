@@ -198,6 +198,6 @@ setInterval(() => {
     socket.send(JSON.stringify(batch));
     console.log(`batch sent msgs ${batch.length}`);
   }
-}, 100);
+}, 200);
 
 console.log('started');
