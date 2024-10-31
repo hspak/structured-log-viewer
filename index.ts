@@ -85,6 +85,11 @@ async function staticFiles() {
         "Content-Type": "text/javascript",
       },
     }),
+     "/index.new.js": new Response(await Bun.file("./public/index.new.js").bytes(), {
+      headers: {
+        "Content-Type": "text/javascript",
+      },
+    }),
      "/style/index.css": new Response(await Bun.file("./public/style/index.css").bytes(), {
       headers: {
         "Content-Type": "text/css",

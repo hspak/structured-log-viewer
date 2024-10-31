@@ -12,8 +12,43 @@
 
 .content {
   flex-direction: column;
+  position: relative;
+  overflow: hidden;
 }
 
+.virtual-scroll-container {
+  position: relative;
+  overflow: hidden;
+  height: calc(100vh - 50px);
+}
+
+.virtual-scroll-content {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+}
+
+.virtual-scrollbar {
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 8px;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.virtual-scrollbar-thumb {
+  position: absolute;
+  width: 100%;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.virtual-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.5);
+}
 .attribute-header {
   font-weight: 600;
   padding: 2px;
@@ -44,8 +79,11 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 86vw;
-  line-height: 1.1rem;
+  width: calc(100% - 8px);
+  height: 22px;
+  line-height: 22px;
+  padding: 0 4px;
+  box-sizing: border-box;
 }
 
 .message-details {
