@@ -103,6 +103,14 @@ async function staticFiles() {
         },
       },
     ),
+    "/sidenav.js": new Response(
+      await Bun.file("./public/sidenav.js").bytes(),
+      {
+        headers: {
+          "Content-Type": "text/javascript",
+        },
+      },
+    ), 
     "/style/index.css": new Response(
       await Bun.file("./public/style/index.css").bytes(),
       {
