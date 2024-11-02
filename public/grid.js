@@ -13,7 +13,7 @@ let viewportHeight = container.clientHeight; // TODO: subtrack header height
 const viewportRows = [];
 
 console.log("height", viewportHeight);
-for (let i = 0; i < 100; i++) {
+while (true) {
   const elem = document.createElement("div");
   const text = document.createTextNode(`row${i}`);
   elem.appendChild(text);

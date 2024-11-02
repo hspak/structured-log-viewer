@@ -1,16 +1,20 @@
 const MAX_ATTR = 20;
-const MAX_LINES = 5000;
+const HEIGHT_OFFSET = 8 + 8 + 21.602 + 10.39;
 
-let last = 0;
 let appState = null;
-let rows = [];
+
+let viewportRows = [];
+let viewportOffset = 0;
+
+let rawDataLength = 0;
 let rawData = [];
 let filteredData = [];
 let fuzzyData = [];
-let entrypoint = document.getElementById('stuff');
 
+let container = document.getElementById('stuff');
 let sidenav = document.getElementById('attributes');
 let fuzzy = document.getElementById('searchinput');
+
 let fuzzyVal = "";
 let attrRows = [];
 
@@ -87,10 +91,9 @@ function populate(msgs) {
         ...content,
       });
 
-      // TODO: find some fallback if we exceed MAX_DATA
       lines.forEach((line) => {
-        rawData[last] = line;
-        last += 1;
+        rawData[rawDataLength] = line;
+        rawDataLength += 1;
       });
     });
   });
@@ -141,43 +144,42 @@ function renderSidenav() {
 function render() {
   filter();
 
-  const offset = last > MAX_LINES && fuzzyData.length === rawData.length ? last - MAX_LINES : 0;
-  const cap = Math.min(MAX_LINES, last, fuzzyData.length);
-  for (let i=0; i<cap; i++) {
-    const datum = fuzzyData[i+offset];
-    rows[i].childNodes[1].childNodes[0].nodeValue = `${datum.filename}: `;
-    rows[i].childNodes[2].childNodes[0].nodeValue = datum.severity;
-    rows[i].childNodes[3].childNodes[0].nodeValue = `${datum.timestamp.substring(0,23)}: `;
-    rows[i].childNodes[4].childNodes[0].nodeValue = datum.message;
+  const maxRender = Math.min(viewportRows.length, Math.max(0, fuzzyData.length - viewportOffset));
+  console.log('offset', viewportOffset, 'max', maxRender);
+  for (let i=0; i<maxRender; i++) {
+    const datum = fuzzyData[i + viewportOffset];
+    viewportRows[i].childNodes[1].childNodes[0].nodeValue = `${datum.filename}: `;
+    viewportRows[i].childNodes[2].childNodes[0].nodeValue = datum.severity;
+    viewportRows[i].childNodes[3].childNodes[0].nodeValue = `${datum.timestamp.substring(0,23)}: `;
+    viewportRows[i].childNodes[4].childNodes[0].nodeValue = datum.message;
 
     if (datum.severity === 'DEBUG') {
-      rows[i].childNodes[2].className = 'severity-debug';
+      viewportRows[i].childNodes[2].className = 'severity-debug';
     } else if (datum.severity === 'WARNING') {
-      rows[i].childNodes[2].className = 'severity-warning';
+      viewportRows[i].childNodes[2].className = 'severity-warning';
     } else if (datum.severity === 'ERROR') {
-      rows[i].childNodes[2].className = 'severity-error';
+      viewportRows[i].childNodes[2].className = 'severity-error';
     } else {
-      rows[i].childNodes[2].className = 'severity-info';
+      viewportRows[i].childNodes[2].className = 'severity-info';
     }
 
     Object.entries(datum).forEach(([key, val]) => {
       if (!reservedNames.includes(key)) {
         const keySanitized = key.replace(/[^a-zA-Z\-]/g, '-');
-        rows[i].setAttribute(`data-${keySanitized}`, val);
-        rows[i].classList.remove('hide');
+        viewportRows[i].setAttribute(`data-${keySanitized}`, val);
+        viewportRows[i].classList.remove('hide');
       }
     });
   }
 
-  // Clear
-  const fullCap = Math.min(MAX_LINES, last);
-  for (let i=cap; i<fullCap; i++) {
-      rows[i].classList.add('hide');
+ for (let i=maxRender; i<viewportRows.length; i++) {
+      viewportRows[i].classList.add('hide');
   }
+
   renderSidenav();
 }
 
-for(let i = 0; i < MAX_LINES; i++) {
+function initDomRow() {
   const div = document.createElement('div');
 
   const toggle = document.createElement('button');
@@ -227,8 +229,15 @@ for(let i = 0; i < MAX_LINES; i++) {
       div.replaceChildren(toggle, filename, sev, timestamp, message);
     }
   };
-  entrypoint.append(div);
-  rows.push(div);
+  container.append(div);
+  viewportRows.push(div); 
+}
+
+while (true) {
+  initDomRow();
+  if ((container.clientHeight) > (container.parentElement.clientHeight - HEIGHT_OFFSET)) {
+    break;
+  }
 }
 
 for(let i = 0; i < MAX_ATTR; i++) {
@@ -236,6 +245,18 @@ for(let i = 0; i < MAX_ATTR; i++) {
   sidenav.append(div);
   attrRows.push(div);
 }
+
+addEventListener("resize", () => {
+  const maxHeight = container.parentElement.clientHeight - HEIGHT_OFFSET;
+  while (container.clientHeight < maxHeight) {
+    initDomRow();
+  }
+  while (container.clientHeight >= maxHeight) {
+    viewportRows.pop().remove();
+  }
+
+  render()
+});
 
 const socket = new WebSocket('ws://localhost:8080/socket');
 socket.onopen = () => socket.send('ready');
@@ -250,3 +271,4 @@ socket.onmessage = (event) => {
     logger.error('Got message before ready');
   }
 }
+ 
