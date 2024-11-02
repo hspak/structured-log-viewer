@@ -4,23 +4,31 @@ scrollAreaY.classList.add("scroll-area");
 const scrollThumbY = document.createElement("div");
 scrollThumbY.classList.add("scroll-thumb");
 
-let scrollOffsetY = 0;
+let scrollOffset = 0;
+let scrolling = false;
 
 function preventDefault(e) {
   e.preventDefault();
 }
 
+function resetScroll() {
+  scrollOffset = 0;
+  scrollBy(0);
+}
+
 function scrollBy(offset) {
-  const min = Math.min(offset, container.clientHeight - HEIGHT_OFFSET);
-  const clamped = Math.max(0, min);
-  scrollThumbY.style.transform = `translateY(${clamped}px)`;
+  scrollOffset += offset;
 
-  viewportOffset = clamped > 0 ? Math.floor((clamped * fuzzyData.length) / clamped) - 1 - viewportRows.length : 0;
+  const min = Math.min(scrollOffset, container.clientHeight - HEIGHT_OFFSET);
+  scrollOffset = Math.max(0, min);
+  scrollThumbY.style.transform = `translateY(${scrollOffset}px)`;
 
-  // TODO: clean up
-  if (viewportOffset < 0) {
-    viewportOffset = 0;
-  }
+  const ratio = scrollOffset / (container.clientHeight - HEIGHT_OFFSET);
+
+  viewportOffset = scrollOffset > 0
+    ? Math.max(0, Math.floor(ratio * fuzzyData.length) - 1 - viewportRows.length)
+    : 0;
+  console.log('raw scroll', scrollOffset, 'ratio', Math.floor(ratio * 100), 'offset', viewportOffset)
 
   render();
 }
@@ -28,8 +36,8 @@ function scrollBy(offset) {
 function onThumbDrag(e) {
   e.preventDefault();
   e.stopPropagation();
-  scrollOffsetY += e.movementY;
-  scrollBy(scrollOffsetY);
+  scrollOffset += e.movementY;
+  scrollBy(e.movementY);
 }
 
 function onThumbMouseUp() {
@@ -50,11 +58,15 @@ function onContainerWheel(e) {
   e.preventDefault();
   e.stopPropagation();
 
-  scrollOffsetY += e.deltaY;
-  scrollBy(scrollOffsetY);
+  if (scrolling) {
+    return;
+  }
 
-  // TODO: consider the isScrolling trick
-  // window.requestAnimationFrame(() => {})
+  scrolling = true;
+  window.requestAnimationFrame(() => {
+    scrollBy(e.deltaY);
+    scrolling = false;
+  });
 }
 
 scrollAreaY.addEventListener("mousemove", preventDefault);
@@ -69,7 +81,6 @@ container.prepend(scrollThumbY);
 container.prepend(scrollAreaY);
 
 document.addEventListener('keydown', function(event) {
-  console.log('wtf', event)
   switch(event.key) {
     case 'ArrowUp':
       if (viewportOffset > 0 ) {

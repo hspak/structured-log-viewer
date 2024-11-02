@@ -68,8 +68,7 @@ function accumUniqueAttrs(structuredLog, filename) {
   }
 }
 
-// TODO: ideally we can filter OR for values within the same attribute, but
-// AND for across attributes.
+// TODO: refactor, it's slow
 function filter() {
   let inter = [];
   filters.forEach((attrVal, attrName) => {
@@ -134,6 +133,10 @@ function renderSidenav() {
         } else if (filters.has(attrName)) {
           filters.delete(attrName, filterKey);
         }
+
+        // Go back to top on filters.
+        resetScroll();
+
         render();
       };
       attrRows[i].append(div);
@@ -145,7 +148,7 @@ function render() {
   filter();
 
   const maxRender = Math.min(viewportRows.length, Math.max(0, fuzzyData.length - viewportOffset));
-  console.log('offset', viewportOffset, 'max', maxRender);
+  // console.log('offset', viewportOffset, 'max', maxRender);
   for (let i=0; i<maxRender; i++) {
     const datum = fuzzyData[i + viewportOffset];
     viewportRows[i].childNodes[1].childNodes[0].nodeValue = `${datum.filename}: `;
@@ -207,9 +210,6 @@ function initDomRow() {
 
   div.classList.add('message-line');
   toggle.onclick = (e) => {
-    e.target.disabled = true;
-    setTimeout(() => {e.target.disabled = false}, 200);
-    
     const line = e.target.parentNode;
     const isOpen = div.classList.contains('selected');
     if (!isOpen) {
