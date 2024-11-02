@@ -95,11 +95,6 @@ async function staticFiles() {
         "Content-Type": "text/javascript",
       },
     }),
-    "/grid.js": new Response(await Bun.file("./public/grid.js").bytes(), {
-      headers: {
-        "Content-Type": "text/javascript",
-      },
-    }),
     "/scrollbar.js": new Response(
       await Bun.file("./public/scrollbar.js").bytes(),
       {
