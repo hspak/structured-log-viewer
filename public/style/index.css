@@ -1,87 +1,118 @@
+body {
+    min-width: 100vw;
+    min-height: 100vh;
+    max-width: 100vw;
+    max-height: 100vh;
+
+    overflow: hidden;
+}
 .main {
-  display: flex;
-  flex-direction: row;
-  width: 98vw;
-  height: 100vh;
+    display: flex;
+    flex-direction: row;
+    width: 98vw;
+    height: 100vh;
 }
 
 .sidenav {
-  flex-direction: column;
-  max-width: 12vw;
+    flex-direction: column;
+    max-width: 12vw;
 }
 
 .content {
-  flex-direction: column;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+}
+
+#stuff {
+}
+
+.scroll-area {
+    background-color: #cccccc;
+    position: absolute;
+    right: 0;
+    width: 16px;
+    height: 100%;
+}
+
+.scroll-thumb {
+    background-color: #555555;
+    position: absolute;
+    right: 0;
+    height: 16px;
+    width: 16px;
 }
 
 .attribute-header {
-  font-weight: 600;
-  padding: 2px;
+    font-weight: 600;
+    padding: 2px;
 }
 .attribute-item {
-  margin-left: 0.5rem;
-  margin-right: 0.5rem;
-  padding: 2px;
-  cursor: pointer;
-  font-size: 14px;
+    margin-left: 0.5rem;
+    margin-right: 0.5rem;
+    padding: 2px;
+    cursor: pointer;
+    font-size: 14px;
 
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
-.attribute-item:hover, .message-line:hover {
-  background-color: #dddddd;
+.attribute-item:hover,
+.message-line:hover {
+    background-color: #dddddd;
 }
 
 .selected {
-  font-weight: 600;
+    font-weight: 600;
 }
 
 .message-line {
-  font-family: "San Francisco", monospace;
-  font-size: 12px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 86vw;
-  line-height: 1.1rem;
+    font-family: "San Francisco", monospace;
+    font-size: 12px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 86vw;
+    line-height: 1.1rem;
 }
 
 .message-details {
-  margin-left: 8px;
+    margin-left: 8px;
 }
 
 .severity-info {
-  display: inline-block;
-  width: 8ch;
+    display: inline-block;
+    width: 8ch;
 }
 
 .severity-debug {
-  display: inline-block;
-  width: 8ch;
-  color: #336699;
+    display: inline-block;
+    width: 8ch;
+    color: #336699;
 }
 
 .severity-warning {
-  display: inline-block;
-  width: 8ch;
-  color: #999933;
+    display: inline-block;
+    width: 8ch;
+    color: #999933;
 }
 
 .severity-error {
-  display: inline-block;
-  width: 8ch;
-  color: #993333;
+    display: inline-block;
+    width: 8ch;
+    color: #993333;
 }
 
 .toggle {
-  padding: 0;
-  margin: 0 4px 0 0;
-  font-family: "San Francisco", monospace;
-  user-select: none;
+    padding: 0;
+    margin: 0 4px 0 0;
+    font-family: "San Francisco", monospace;
+    user-select: none;
 }
 
 .hide {
-  display: none;
+    display: none;
 }
