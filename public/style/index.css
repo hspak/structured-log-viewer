@@ -9,7 +9,7 @@ body {
 .main {
     display: flex;
     flex-direction: row;
-    width: 98vw;
+    width: 99vw;
     height: 100vh;
 }
 
@@ -72,10 +72,11 @@ body {
 .message-line {
     font-family: "San Francisco", monospace;
     font-size: 12px;
+
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    max-width: 86vw;
+
     line-height: 1.1rem;
 }
 

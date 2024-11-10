@@ -40,7 +40,7 @@ export function setupScrollListeners() {
         }
         break;
     }
-    render()
+    render(true);
   });
 }  
 
@@ -62,7 +62,7 @@ function scrollBy(offset) {
     : 0);
   console.log('raw scroll', scrollOffset, 'ratio', Math.floor(ratio * 100), 'offset', viewportOffset)
 
-  render();
+  render(true);
 }
 
 function onThumbDrag(e) {

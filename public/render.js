@@ -38,13 +38,23 @@ export function updateViewportOffset(offset) {
   viewportOffset = offset;
 }
 
-export function render() {
+export function render(clearToggles) {
   filter();
 
+  // TODO: This is a bit of a cop out because I don't have a good solution to 
+  // keep track of the toggle state per-row. Keep track of toggle state on fuzzyData.
+  document.querySelectorAll('.message-details').forEach(e => e.remove());
+
   const maxRender = Math.min(viewportRows.length, Math.max(0, fuzzyData.length - viewportOffset));
-  // console.log('offset', viewportOffset, 'max', maxRender);
   for (let i=0; i<maxRender; i++) {
     const datum = fuzzyData[i + viewportOffset];
+
+    if (clearToggles && viewportRows[i].classList.contains('selected')) {
+      viewportRows[i].classList.remove('selected');
+      viewportRows[i].childNodes[0].childNodes[0].nodeValue = 'show';
+      continue;
+    }
+
     viewportRows[i].childNodes[1].childNodes[0].nodeValue = `${datum.filename}: `;
     viewportRows[i].childNodes[2].childNodes[0].nodeValue = datum.severity;
     viewportRows[i].childNodes[3].childNodes[0].nodeValue = `${datum.timestamp.substring(0,23)}: `;
@@ -70,7 +80,7 @@ export function render() {
   }
 
  for (let i=maxRender; i<viewportRows.length; i++) {
-      viewportRows[i].classList.add('hide');
+    viewportRows[i].classList.add('hide');
   }
 
   renderSidenav();
@@ -149,4 +159,3 @@ function initDomRow() {
   container.append(div);
   viewportRows.push(div); 
 }
-
