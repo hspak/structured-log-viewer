@@ -30,13 +30,15 @@ export function setupScrollListeners() {
   document.addEventListener('keydown', function(event) {
     switch(event.key) {
       case 'ArrowUp':
+      case 'k':
         if (viewportOffset > 0 ) {
-          viewportOffset -= 1;
+          updateViewportOffset(viewportOffset - 1);
         }
         break;
       case 'ArrowDown':
+      case 'j':
         if (viewportOffset < (fuzzyData.length - 1 - viewportRows.length)) {
-          viewportOffset += 1;
+          updateViewportOffset(viewportOffset + 1);
         }
         break;
     }
