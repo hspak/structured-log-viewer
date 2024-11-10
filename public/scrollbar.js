@@ -33,16 +33,17 @@ export function setupScrollListeners() {
       case 'k':
         if (viewportOffset > 0 ) {
           updateViewportOffset(viewportOffset - 1);
+          render(true);
         }
         break;
       case 'ArrowDown':
       case 'j':
         if (viewportOffset < (fuzzyData.length - 1 - viewportRows.length)) {
           updateViewportOffset(viewportOffset + 1);
+          render(true);
         }
         break;
     }
-    render(true);
   });
 }
 
