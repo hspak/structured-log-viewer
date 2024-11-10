@@ -9,13 +9,16 @@ body {
 .main {
     display: flex;
     flex-direction: row;
-    width: 99vw;
+    width: 100vw;
     height: 100vh;
 }
 
 .sidenav {
     flex-direction: column;
+    min-width: 12vw;
     max-width: 12vw;
+    overflow-y: scroll;
+    overflow-x: hidden;
 }
 
 .content {
@@ -31,7 +34,7 @@ body {
 .scroll-area {
     background-color: #cccccc;
     position: absolute;
-    right: 0;
+    right: 0 !important;
     width: 16px;
     height: 100%;
 }
@@ -39,9 +42,9 @@ body {
 .scroll-thumb {
     background-color: #555555;
     position: absolute;
-    right: 0;
+    right: 2px !important;
     height: 16px;
-    width: 16px;
+    width: 12px;
 }
 
 .attribute-header {

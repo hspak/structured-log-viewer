@@ -41,7 +41,7 @@ export function updateViewportOffset(offset) {
 export function render(clearToggles) {
   filter();
 
-  // TODO: This is a bit of a cop out because I don't have a good solution to 
+  // TODO: This is a bit of a cop out because I don't have a good solution to
   // keep track of the toggle state per-row. Keep track of toggle state on fuzzyData.
   document.querySelectorAll('.message-details').forEach(e => e.remove());
 
@@ -85,7 +85,7 @@ export function render(clearToggles) {
 
   renderSidenav();
 }
- 
+
 export function bootstrapRows() {
   while (true) {
     initDomRow();
@@ -106,8 +106,8 @@ export function setupResizeListener() {
     }
 
     render();
-  }); 
-} 
+  });
+}
 
 function initDomRow() {
   const div = document.createElement('div');
@@ -143,6 +143,7 @@ function initDomRow() {
       div.classList.add('selected');
       const dataAttrs = line.getAttributeNames().filter((attr) => attr.startsWith('data-'));
       dataAttrs.forEach((attr) => {
+        // TODO: add button to pin attribute dynamically
         e.target.childNodes[0].nodeValue = 'hide';
         const elem = document.createElement('div');
         const text = document.createTextNode(`${attr.substring(5)}: ${line.getAttribute(attr)}`);
@@ -157,5 +158,5 @@ function initDomRow() {
     }
   };
   container.append(div);
-  viewportRows.push(div); 
+  viewportRows.push(div);
 }

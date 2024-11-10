@@ -30,6 +30,7 @@ fuzzy.oninput = (e) => {
 };
 
 export function accumUniqueAttrs(structuredLog, filename) {
+  // TODO: don't pre-pin every attribute
   for (const key in structuredLog) {
     if (reservedNames.includes(key)) {
       continue;
@@ -62,7 +63,7 @@ export function filter() {
   filteredData = inter.length > 0 ? inter : rawData;
   updateFuzzyData(fuzzyVal ? filteredData.filter((data) => data.message.toLowerCase().includes(fuzzyVal)) : filteredData);
 }
- 
+
 export function renderSidenav() {
   Object.entries(attributes).forEach(([attrName, values], i) => {
     attrRows[i].replaceChildren();

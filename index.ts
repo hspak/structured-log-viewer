@@ -55,22 +55,17 @@ function formatJson(content: string): Content[] {
       contents.push({
         message: lines[i],
         timestamp: now,
-        severity: "INFO",
+        severity: "DEFAULT",
       });
       continue;
     }
     try {
-      const obj = JSON.parse(lines[i]);
-      if ("message" in obj && "timestamp" in obj && "severity" in obj) {
-        contents.push(obj);
-        continue;
-      } else {
-        contents.push({
-          message: lines[i],
-          timestamp: "timestamp" in obj ? obj["timestamp"] : now,
-          severity: "severity" in obj ? obj["severity"] : now,
-        });
-      }
+      let obj = JSON.parse(lines[i]);
+      obj.message = "message" in obj ? obj["message"]: lines[i];
+      obj.timestamp = "timestamp" in obj ? obj["timestamp"]: now;
+      obj.severity = "severity" in obj ? obj["severity"] : 'INFO';
+      contents.push(obj);
+      continue;
     } catch (e) {
       // console.error(e);
     }
@@ -110,7 +105,7 @@ async function staticFiles() {
           "Content-Type": "text/javascript",
         },
       },
-    ), 
+    ),
     "/render.js": new Response(
       await Bun.file("./public/render.js").bytes(),
       {
@@ -118,7 +113,7 @@ async function staticFiles() {
           "Content-Type": "text/javascript",
         },
       },
-    ),  
+    ),
     "/constants.js": new Response(
       await Bun.file("./public/constants.js").bytes(),
       {
@@ -126,7 +121,7 @@ async function staticFiles() {
           "Content-Type": "text/javascript",
         },
       },
-    ),   
+    ),
     "/style/index.css": new Response(
       await Bun.file("./public/style/index.css").bytes(),
       {

@@ -44,7 +44,7 @@ export function setupScrollListeners() {
     }
     render(true);
   });
-}  
+}
 
 function preventDefault(e) {
   e.preventDefault();
@@ -59,6 +59,8 @@ function scrollBy(offset) {
 
   const ratio = scrollOffset / (container.clientHeight - HEIGHT_OFFSET);
 
+  // TODO: scrollbar thumb needs to be dynamically sized
+  // TODO: this linear scroll feels bad
   updateViewportOffset(scrollOffset > 0
     ? Math.max(0, Math.floor(ratio * fuzzyData.length) - 1 - viewportRows.length)
     : 0);
