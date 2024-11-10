@@ -1,10 +1,11 @@
-const MAX_ATTR = 20;
+import { reservedNames, MAX_ATTR } from './constants.js';
+import { rawData, updateFuzzyData, render } from './render.js';
+import { resetScroll } from './scrollbar.js';
 
 let sidenav = document.getElementById('attributes');
 let fuzzy = document.getElementById('searchinput');
 
 let filteredData = [];
-let fuzzyData = [];
 
 let fuzzyVal = "";
 let attrRows = [];
@@ -23,18 +24,12 @@ let attributes = {
 
 let filters = new Map();
 
-const reservedNames = [
-  'message',
-  'timestamp',
-  'filename',
-];
-
 fuzzy.oninput = (e) => {
   fuzzyVal = e.target.value;
   render();
 };
 
-function accumUniqueAttrs(structuredLog, filename) {
+export function accumUniqueAttrs(structuredLog, filename) {
   for (const key in structuredLog) {
     if (reservedNames.includes(key)) {
       continue;
@@ -59,16 +54,16 @@ function accumUniqueAttrs(structuredLog, filename) {
 }
 
 // TODO: refactor, it's slow
-function filter() {
+export function filter() {
   let inter = [];
   filters.forEach((attrVal, attrName) => {
     inter = rawData.filter((dat) => dat[attrName] === attrVal);
   });
   filteredData = inter.length > 0 ? inter : rawData;
-  fuzzyData = fuzzyVal ? filteredData.filter((data) => data.message.toLowerCase().includes(fuzzyVal)) : filteredData;
+  updateFuzzyData(fuzzyVal ? filteredData.filter((data) => data.message.toLowerCase().includes(fuzzyVal)) : filteredData);
 }
  
-function renderSidenav() {
+export function renderSidenav() {
   Object.entries(attributes).forEach(([attrName, values], i) => {
     attrRows[i].replaceChildren();
 
@@ -113,8 +108,10 @@ function renderSidenav() {
   });
 }
 
-for(let i = 0; i < MAX_ATTR; i++) {
-  const div = document.createElement('div');
-  sidenav.append(div);
-  attrRows.push(div);
+export function bootstrapSidenav() {
+  for(let i = 0; i < MAX_ATTR; i++) {
+    const div = document.createElement('div');
+    sidenav.append(div);
+    attrRows.push(div);
+  }
 }

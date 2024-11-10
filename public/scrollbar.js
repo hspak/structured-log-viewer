@@ -1,3 +1,6 @@
+import { HEIGHT_OFFSET } from './constants.js';
+import { container, fuzzyData, viewportRows, viewportOffset, updateViewportOffset, render } from './render.js';
+
 const scrollAreaY = document.createElement("div");
 scrollAreaY.classList.add("scroll-area");
 
@@ -7,13 +10,42 @@ scrollThumbY.classList.add("scroll-thumb");
 let scrollOffset = 0;
 let scrolling = false;
 
-function preventDefault(e) {
-  e.preventDefault();
-}
-
-function resetScroll() {
+export function resetScroll() {
   scrollOffset = 0;
   scrollBy(0);
+}
+
+export function setupScrollListeners() {
+  scrollAreaY.addEventListener("mousemove", preventDefault);
+  scrollAreaY.addEventListener("mousedown", preventDefault);
+
+  scrollThumbY.addEventListener("mousedown", onThumbMouseDown);
+
+  // https://github.com/WICG/EventListenerOptions/blob/gh-pages/explainer.md
+  container.addEventListener("wheel", onContainerWheel);
+
+  container.prepend(scrollThumbY);
+  container.prepend(scrollAreaY);
+
+  document.addEventListener('keydown', function(event) {
+    switch(event.key) {
+      case 'ArrowUp':
+        if (viewportOffset > 0 ) {
+          viewportOffset -= 1;
+        }
+        break;
+      case 'ArrowDown':
+        if (viewportOffset < (fuzzyData.length - 1 - viewportRows.length)) {
+          viewportOffset += 1;
+        }
+        break;
+    }
+    render()
+  });
+}  
+
+function preventDefault(e) {
+  e.preventDefault();
 }
 
 function scrollBy(offset) {
@@ -25,9 +57,9 @@ function scrollBy(offset) {
 
   const ratio = scrollOffset / (container.clientHeight - HEIGHT_OFFSET);
 
-  viewportOffset = scrollOffset > 0
+  updateViewportOffset(scrollOffset > 0
     ? Math.max(0, Math.floor(ratio * fuzzyData.length) - 1 - viewportRows.length)
-    : 0;
+    : 0);
   console.log('raw scroll', scrollOffset, 'ratio', Math.floor(ratio * 100), 'offset', viewportOffset)
 
   render();
@@ -68,30 +100,3 @@ function onContainerWheel(e) {
     scrolling = false;
   });
 }
-
-scrollAreaY.addEventListener("mousemove", preventDefault);
-scrollAreaY.addEventListener("mousedown", preventDefault);
-
-scrollThumbY.addEventListener("mousedown", onThumbMouseDown);
-
-// https://github.com/WICG/EventListenerOptions/blob/gh-pages/explainer.md
-container.addEventListener("wheel", onContainerWheel);
-
-container.prepend(scrollThumbY);
-container.prepend(scrollAreaY);
-
-document.addEventListener('keydown', function(event) {
-  switch(event.key) {
-    case 'ArrowUp':
-      if (viewportOffset > 0 ) {
-        viewportOffset -= 1;
-      }
-      break;
-    case 'ArrowDown':
-      if (viewportOffset < (fuzzyData.length - 1 - viewportRows.length)) {
-        viewportOffset += 1;
-      }
-      break;
-  }
-  render()
-});

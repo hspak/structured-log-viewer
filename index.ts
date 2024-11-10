@@ -111,6 +111,22 @@ async function staticFiles() {
         },
       },
     ), 
+    "/render.js": new Response(
+      await Bun.file("./public/render.js").bytes(),
+      {
+        headers: {
+          "Content-Type": "text/javascript",
+        },
+      },
+    ),  
+    "/constants.js": new Response(
+      await Bun.file("./public/constants.js").bytes(),
+      {
+        headers: {
+          "Content-Type": "text/javascript",
+        },
+      },
+    ),   
     "/style/index.css": new Response(
       await Bun.file("./public/style/index.css").bytes(),
       {
