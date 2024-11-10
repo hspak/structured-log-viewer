@@ -6,6 +6,12 @@ let appState = null;
 
 const socket = new WebSocket('ws://localhost:8080/socket');
 socket.onopen = () => socket.send('ready');
+socket.onerror = (err) => {
+  console.log('errored?', err);
+}
+socket.closed = (event) => {
+  console.log('closed?', event);
+}
 socket.onmessage = (event) => {
   if (appState) {
     const d = JSON.parse(event.data);
@@ -21,3 +27,4 @@ socket.onmessage = (event) => {
     logger.error('Got message before ready');
   }
 }
+

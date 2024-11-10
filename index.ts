@@ -181,9 +181,8 @@ Bun.serve({
   websocket: {
     // this is called when a message is received
     async message(ws, message) {
-      if (socket === null) {
-        socket = ws;
-      }
+      // Last client wins.
+      socket = ws;
       if (message === "ready") {
         console.log(`New client is ${message}`);
         ws.send("hello");

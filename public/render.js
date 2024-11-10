@@ -1,9 +1,11 @@
 import { reservedNames, HEIGHT_OFFSET } from './constants.js';
 import { accumUniqueAttrs,filter, renderSidenav } from './sidenav.js';
+import { updateScrollThumb } from './scrollbar.js';
 
 export let container = document.getElementById('stuff');
 export let viewportRows = [];
 export let viewportOffset = 0;
+export let viewportSticky = false;
 
 export let fuzzyData = [];
 export let rawData = [];
@@ -28,6 +30,9 @@ export function populate(msgs) {
       });
     });
   });
+  if (viewportSticky) {
+    updateViewportOffset(viewportOffset + msgs.length);
+  }
 }
 
 export function updateFuzzyData(updatedData) {
@@ -39,6 +44,7 @@ export function updateViewportOffset(offset) {
 }
 
 export function render(clearToggles) {
+  // TODO: something is broken with the windowing when there is streaming logs with a search filter applied.
   filter();
 
   // TODO: This is a bit of a cop out because I don't have a good solution to
@@ -46,6 +52,10 @@ export function render(clearToggles) {
   document.querySelectorAll('.message-details').forEach(e => e.remove());
 
   const maxRender = Math.min(viewportRows.length, Math.max(0, fuzzyData.length - viewportOffset));
+  if (maxRender + viewportOffset === fuzzyData.length) {
+    viewportSticky = true;
+  }
+
   for (let i=0; i<maxRender; i++) {
     const datum = fuzzyData[i + viewportOffset];
 
@@ -84,6 +94,7 @@ export function render(clearToggles) {
   }
 
   renderSidenav();
+  updateScrollThumb();
 }
 
 export function bootstrapRows() {
@@ -105,6 +116,7 @@ export function setupResizeListener() {
       viewportRows.pop().remove();
     }
 
+    updateScrollThumb();
     render();
   });
 }

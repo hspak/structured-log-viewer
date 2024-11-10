@@ -61,7 +61,15 @@ export function filter() {
     inter = rawData.filter((dat) => dat[attrName] === attrVal);
   });
   filteredData = inter.length > 0 ? inter : rawData;
-  updateFuzzyData(fuzzyVal ? filteredData.filter((data) => data.message.toLowerCase().includes(fuzzyVal)) : filteredData);
+  updateFuzzyData(fuzzyVal ? filteredData.filter((data) => {
+    // If the filter input is all lowercase, assume case insensitivity.
+    // Otherwise, match exactly.
+    if (fuzzyVal.toLowerCase() === fuzzyVal) {
+      return data.message.toLowerCase().includes(fuzzyVal);
+    } else {
+      return data.message.includes(fuzzyVal);
+    }
+  }) : filteredData);
 }
 
 export function renderSidenav() {

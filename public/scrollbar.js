@@ -9,6 +9,7 @@ scrollThumbY.classList.add("scroll-thumb");
 
 let scrollOffset = 0;
 let scrolling = false;
+let scrollThumbHeight = 16;
 
 export function resetScroll() {
   scrollOffset = 0;
@@ -33,13 +34,15 @@ export function setupScrollListeners() {
       case 'k':
         if (viewportOffset > 0 ) {
           updateViewportOffset(viewportOffset - 1);
+          updateScrollThumb();
           render(true);
         }
         break;
       case 'ArrowDown':
       case 'j':
-        if (viewportOffset < (fuzzyData.length - 1 - viewportRows.length)) {
+        if (viewportOffset < (fuzzyData.length - viewportRows.length)) {
           updateViewportOffset(viewportOffset + 1);
+          updateScrollThumb();
           render(true);
         }
         break;
@@ -51,21 +54,44 @@ function preventDefault(e) {
   e.preventDefault();
 }
 
+export function updateScrollThumb() {
+  if (fuzzyData.length <= viewportRows.length) {
+    scrollThumbY.style.height = '100%';
+    scrollThumbY.style.backgroundColor = '#cccccc';
+    return;
+  } else {
+    const ratio = viewportRows.length / fuzzyData.length;
+    const capped = Math.max(ratio, 0.05);
+    scrollThumbHeight = (container.clientHeight - HEIGHT_OFFSET) * capped;
+    scrollThumbY.style.height = `${scrollThumbHeight}px`;
+    scrollThumbY.style.backgroundColor = '#555555';
+  }
+
+  // Ensure that the scrollbar stays above the browser when resizing.
+  const windowHeight = container.clientHeight + HEIGHT_OFFSET;
+  if (windowHeight < scrollThumbY.getBoundingClientRect().bottom) {
+    scrollBy(windowHeight - scrollThumbY.getBoundingClientRect().bottom);
+  }
+}
+
 function scrollBy(offset) {
+  if (scrollThumbY.style.height === '100%') {
+    return;
+  }
+
   scrollOffset += offset;
 
-  const min = Math.min(scrollOffset, container.clientHeight - HEIGHT_OFFSET);
+  const windowHeight = container.clientHeight + HEIGHT_OFFSET;
+  const min = Math.min(scrollOffset, windowHeight);
   scrollOffset = Math.max(0, min);
   scrollThumbY.style.transform = `translateY(${scrollOffset}px)`;
 
-  const ratio = scrollOffset / (container.clientHeight - HEIGHT_OFFSET);
+  let ratio = Math.min(1, (scrollOffset + scrollThumbHeight + HEIGHT_OFFSET) / (windowHeight));
 
-  // TODO: scrollbar thumb needs to be dynamically sized
   // TODO: this linear scroll feels bad
   updateViewportOffset(scrollOffset > 0
-    ? Math.max(0, Math.floor(ratio * fuzzyData.length) - 1 - viewportRows.length)
+    ? Math.max(0, Math.floor(ratio * fuzzyData.length) - viewportRows.length)
     : 0);
-  console.log('raw scroll', scrollOffset, 'ratio', Math.floor(ratio * 100), 'offset', viewportOffset)
 
   render(true);
 }
