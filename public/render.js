@@ -33,6 +33,7 @@ export function populate(msgs) {
   if (viewportSticky) {
     updateViewportOffset(viewportOffset + msgs.length);
   }
+  renderSidenav();
 }
 
 export function updateFuzzyData(updatedData) {
@@ -93,7 +94,6 @@ export function render(clearToggles) {
     viewportRows[i].classList.add('hide');
   }
 
-  renderSidenav();
   updateScrollThumb();
 }
 

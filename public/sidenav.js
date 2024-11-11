@@ -112,7 +112,7 @@ export function renderSidenav() {
       const text = document.createTextNode(`${valName}: ${val.count}`);
       div.classList.add('attribute-item')
       div.append(text);
-      div.onclick = (e) => {
+      div.onclick = (_) => {
         if ('meta' in val) {
           val['meta'] = !val['meta'];
         } else {
@@ -137,6 +137,7 @@ export function renderSidenav() {
         // Go back to top on filters.
         resetScroll();
 
+        renderSidenav();
         render();
       };
       attrRows[i].append(div);
