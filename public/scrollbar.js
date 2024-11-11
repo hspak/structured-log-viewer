@@ -38,6 +38,13 @@ export function setupScrollListeners() {
           render(true);
         }
         break;
+      case 'u':
+        if (viewportOffset > 0 ) {
+          updateViewportOffset(viewportOffset - 10);
+          updateScrollThumb();
+          render(true);
+        }
+        break; 
       case 'ArrowDown':
       case 'j':
         if (viewportOffset < (fuzzyData.length - viewportRows.length)) {
@@ -46,6 +53,13 @@ export function setupScrollListeners() {
           render(true);
         }
         break;
+      case 'd':
+        if (viewportOffset < (fuzzyData.length - viewportRows.length)) {
+          updateViewportOffset(viewportOffset + 10);
+          updateScrollThumb();
+          render(true);
+        }
+        break;  
     }
   });
 }
@@ -88,7 +102,6 @@ function scrollBy(offset) {
 
   let ratio = Math.min(1, (scrollOffset + scrollThumbHeight + HEIGHT_OFFSET) / (windowHeight));
 
-  // TODO: this linear scroll feels bad
   updateViewportOffset(scrollOffset > 0
     ? Math.max(0, Math.floor(ratio * fuzzyData.length) - viewportRows.length)
     : 0);
@@ -100,6 +113,8 @@ function onThumbDrag(e) {
   e.preventDefault();
   e.stopPropagation();
   scrollOffset += e.movementY;
+
+  // TODO math is VERY off.
   scrollBy(e.movementY);
 }
 
@@ -127,6 +142,7 @@ function onContainerWheel(e) {
 
   scrolling = true;
   window.requestAnimationFrame(() => {
+    // TODO: Need to throttle this based on some factor determined by number of lines.
     scrollBy(e.deltaY);
     scrolling = false;
   });

@@ -79,9 +79,10 @@ export function filter() {
       merge.push(inter.filter((dat) => dat[attrName] === attrVal));
     });
     inter = merge.flat();
+    console.log(inter)
   });
   merge = merge.flat().sort(sortByTimestamp);
-  filteredData = merge.length > 0 ? merge : rawData;
+  filteredData = filters.size > 0 ? merge : rawData;
 
   updateFuzzyData(fuzzyVal ? filteredData.filter((data) => {
     // If the filter input is all lowercase, assume case insensitivity.
