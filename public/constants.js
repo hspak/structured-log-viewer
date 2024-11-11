@@ -5,4 +5,7 @@ export const reservedNames = [
   'timestamp',
   'filename',
 ];
- 
+export const defaultAttrs = [
+  'filename',
+  'severity',
+]; 

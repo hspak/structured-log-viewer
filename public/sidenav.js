@@ -1,4 +1,4 @@
-import { reservedNames, MAX_ATTR } from './constants.js';
+import { defaultAttrs, reservedNames, MAX_ATTR } from './constants.js';
 import { rawData, updateFuzzyData, render } from './render.js';
 import { resetScroll } from './scrollbar.js';
 
@@ -29,12 +29,12 @@ fuzzy.oninput = (e) => {
   render();
 };
 
-export function accumUniqueAttrs(structuredLog, filename) {
-  // TODO: don't pre-pin every attribute
+export function setupDefaultAttrs(structuredLog, filename) {
   for (const key in structuredLog) {
-    if (reservedNames.includes(key)) {
+    if (!defaultAttrs.includes(key)) {
       continue;
     }
+
     const val = structuredLog[key];
     if (!(key in attributes)) {
       attributes[key] = {};

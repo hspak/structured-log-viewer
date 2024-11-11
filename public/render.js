@@ -1,5 +1,5 @@
 import { reservedNames, HEIGHT_OFFSET } from './constants.js';
-import { accumUniqueAttrs,filter, renderSidenav } from './sidenav.js';
+import { setupDefaultAttrs,filter, renderSidenav } from './sidenav.js';
 import { updateScrollThumb } from './scrollbar.js';
 
 export let container = document.getElementById('stuff');
@@ -18,7 +18,7 @@ export function populate(msgs) {
     msg.contents.forEach((content) => {
       let lines = [];
 
-      accumUniqueAttrs(content, file);
+      setupDefaultAttrs(content, file);
       lines.push({
         filename: file,
         ...content,
