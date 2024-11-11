@@ -54,13 +54,35 @@ export function setupDefaultAttrs(structuredLog, filename) {
   }
 }
 
+function sortByTimestamp(a, b) {
+  if (a.timestamp < b.timestamp) {
+    return -1;
+  } else {
+    return 1;
+  }
+}
+
 // TODO: refactor, it's slow
 export function filter() {
-  let inter = [];
-  filters.forEach((attrVal, attrName) => {
-    inter = rawData.filter((dat) => dat[attrName] === attrVal);
+  // Every attribute in a group filter is an OR.
+  // Every different attribute group is an AND.
+  // Semi-messy strategy: 
+  //   For every attribute group filter, collect lists that fit the filter.
+  //   At the end, merge the lists and use that as the base list for the next filter.
+  //   Unfortunately, we need to sort by timestamp at the end again.
+  //   There's probably a better strategy.
+  let inter = rawData;
+  let merge = [];
+  filters.forEach((attrVals, attrName) => {
+    merge = [];
+    attrVals.forEach((attrVal) => {
+      merge.push(inter.filter((dat) => dat[attrName] === attrVal));
+    });
+    inter = merge.flat();
   });
-  filteredData = inter.length > 0 ? inter : rawData;
+  merge = merge.flat().sort(sortByTimestamp);
+  filteredData = merge.length > 0 ? merge : rawData;
+
   updateFuzzyData(fuzzyVal ? filteredData.filter((data) => {
     // If the filter input is all lowercase, assume case insensitivity.
     // Otherwise, match exactly.
@@ -84,16 +106,13 @@ export function renderSidenav() {
     Object.entries(values).forEach(([valName, val]) => {
       const div = document.createElement('div');
       if ('meta' in val && val['meta'] == true) {
-        div.setAttribute("data-test", val['meta']);
+        div.setAttribute("data-meta", val['meta']);
         div.classList.add('selected')
       }
       const text = document.createTextNode(`${valName}: ${val.count}`);
       div.classList.add('attribute-item')
       div.append(text);
       div.onclick = (e) => {
-        e.target.disabled = true;
-        setTimeout(() => {e.target.disabled = false}, 200);
-
         if ('meta' in val) {
           val['meta'] = !val['meta'];
         } else {
@@ -102,9 +121,17 @@ export function renderSidenav() {
 
         const filterKey = valName;
         if (val['meta']) {
-          filters.set(attrName, filterKey);
+          if (filters.has(attrName)) {
+            filters.set(attrName, [...filters.get(attrName), filterKey]);
+          } else {
+            filters.set(attrName, [filterKey]);
+          }
         } else if (filters.has(attrName)) {
-          filters.delete(attrName, filterKey);
+          if (filters.get(attrName).length === 1) {
+            filters.delete(attrName);
+          } else {
+            filters.set(attrName, filters.get(attrName).filter((key) => key !== filterKey));
+          }
         }
 
         // Go back to top on filters.
