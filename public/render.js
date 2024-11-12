@@ -1,5 +1,5 @@
 import { reservedNames, HEIGHT_OFFSET } from './constants.js';
-import { setupDefaultAttrs,filter, renderSidenav } from './sidenav.js';
+import { isPinnedAttr, setupDefaultAttrs,filter, renderSidenav, pinNewAttr } from './sidenav.js';
 import { updateScrollThumb } from './scrollbar.js';
 
 export let container = document.getElementById('stuff');
@@ -17,11 +17,19 @@ export function populate(msgs) {
     msg.contents.forEach((content) => {
       let lines = [];
 
-      setupDefaultAttrs(content, file);
-      lines.push({
-        filename: file,
-        ...content,
-      });
+      // The row's structured fields are stored as div fields, which are forced lowercase.
+      // The data we keep track of in `rawData` needs to match for things
+      // like pinning attributes to work consistently.
+      let keys = Object.keys(content);
+      let normalizedContent = {}
+      for (let i=0; i<keys.length; i++) {
+        const key = keys[i];
+        normalizedContent[key.toLowerCase()] = content[key];
+      }
+      normalizedContent.filename = file;
+
+      setupDefaultAttrs(normalizedContent);
+      lines.push(normalizedContent);
 
       lines.forEach((line) => {
         rawData[rawDataLength] = line;
@@ -73,10 +81,19 @@ export function render(clearToggles) {
       viewportRows[i].childNodes[2].className = 'severity-info';
     }
 
+
+    // Clear any state attributes before resetting.
+    Object.keys(viewportRows[i].dataset).forEach((dataAttr) => {
+      viewportRows[i].removeAttribute(`data-${dataAttr}`);
+    });
+
     Object.entries(datum).forEach(([key, val]) => {
       if (!reservedNames.includes(key)) {
         const keySanitized = key.replace(/[^a-zA-Z\-]/g, '-');
+
+        // This seems to normalize to all lowercase
         viewportRows[i].setAttribute(`data-${keySanitized}`, val);
+
         viewportRows[i].classList.remove('hide');
       }
     });
@@ -147,13 +164,28 @@ function initDomRow() {
       div.classList.add('selected');
       const dataAttrs = line.getAttributeNames().filter((attr) => attr.startsWith('data-'));
       dataAttrs.forEach((attr) => {
-        // TODO: add button to pin attribute dynamically
         e.target.childNodes[0].nodeValue = 'hide';
+        const attrName = attr.substring(5);
         const elem = document.createElement('div');
-        const text = document.createTextNode(`${attr.substring(5)}: ${line.getAttribute(attr)}`);
+        const text = document.createTextNode(`${attrName}: ${line.getAttribute(attr)}`);
         elem.replaceChildren(text);
         elem.classList.add('message-details');
         div.appendChild(elem);
+
+        if (!isPinnedAttr(attrName)) {
+          const pin = document.createElement('button');
+          const pinText = document.createTextNode('pin');
+          pin.classList.add('message-details');
+          pin.replaceChildren(pinText);
+          pin.onclick = (_e) => {
+            rawData.forEach((datum) => {
+              pinNewAttr(datum, attrName);
+            })
+            pin.remove();
+            renderSidenav();
+          };
+          div.appendChild(pin);
+        }
       });
     } else {
       e.target.childNodes[0].nodeValue = 'show';

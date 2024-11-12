@@ -1,4 +1,4 @@
-import { defaultAttrs, reservedNames, MAX_ATTR } from './constants.js';
+import { defaultAttrs, MAX_ATTR } from './constants.js';
 import { rawData, updateFuzzyData, render } from './render.js';
 import { resetScroll } from './scrollbar.js';
 
@@ -29,7 +29,29 @@ fuzzy.oninput = (e) => {
   render();
 };
 
-export function setupDefaultAttrs(structuredLog, filename) {
+export function isPinnedAttr(attrName) {
+  return Object.keys(attributes).includes(attrName);
+}
+
+export function pinNewAttr(datum, attrName) {
+  if (!(attrName in datum)) {
+    return;
+  }
+
+  const key = attrName;
+  const val = datum[attrName];
+  if (!(key in attributes)) {
+    attributes[key] = {};
+  }
+  if (val in attributes[key]) {
+    attributes[key][val]['count'] += 1;
+  } else {
+    attributes[key][val] = {};
+    attributes[key][val]['count'] = 1;
+  } 
+}
+
+export function setupDefaultAttrs(structuredLog) {
   for (const key in structuredLog) {
     if (!defaultAttrs.includes(key)) {
       continue;
@@ -45,12 +67,6 @@ export function setupDefaultAttrs(structuredLog, filename) {
       attributes[key][val] = {};
       attributes[key][val]['count'] = 1;
     }
-  }
-  if (!(filename in attributes['filename'])) {
-    attributes['filename'][filename] = {}
-    attributes['filename'][filename]['count'] = 1
-  } else {
-    attributes['filename'][filename]['count'] += 1
   }
 }
 
