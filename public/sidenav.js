@@ -30,7 +30,7 @@ fuzzy.oninput = (e) => {
 };
 
 // We only really care about these on load.
-const liveSearchParams = new URLSearchParams(window.location.search).entries()
+const liveSearchParams = Array.from(new URLSearchParams(window.location.search).entries())
   .reduce((acc, val) => {
     acc[val[0]] = val[1].split(',');
     return acc;
