@@ -28,6 +28,20 @@ fuzzy.oninput = (e) => {
   fuzzyVal = e.target.value;
   render();
 };
+ 
+// We only really care about these on load.
+const liveSearchParams = new URLSearchParams(window.location.search).entries()
+  .reduce((acc, val) => {
+    acc[val[0]] = val[1].split(',');
+    return acc;
+  }, {}); 
+ 
+// A bit of a hack to only have the 
+// filter-from-searchparam code run on the initial file loads.
+let paramsLoaded = false;
+setTimeout(() => {
+  paramsLoaded = true;
+}, 2000)
 
 export function isPinnedAttr(attrName) {
   return Object.keys(attributes).includes(attrName);
@@ -129,9 +143,21 @@ export function renderSidenav() {
     attrRows[i].append(div);
     Object.entries(values).sort(sortByName).forEach(([valName, val]) => {
       const div = document.createElement('div');
+      const attrInSearchParam = attrName in liveSearchParams && liveSearchParams[attrName].includes(valName);
       if ('meta' in val && val['meta'] == true) {
         div.setAttribute("data-meta", val['meta']);
         div.classList.add('selected')
+      }
+      if (!paramsLoaded && attrInSearchParam) {
+        div.setAttribute("data-meta", val['meta']);
+        div.classList.add('selected')
+        if (filters.has(attrName)) {
+          // This needs to be de-duped because as new files get loaded into the app,
+          // this filter call gets redundantly called for every file.
+          filters.set(attrName, Array.from(new Set([...filters.get(attrName), valName])));
+        } else {
+          filters.set(attrName, [valName]);
+        } 
       }
       const text = document.createTextNode(`${valName}: ${val.count}`);
       div.classList.add('attribute-item')
