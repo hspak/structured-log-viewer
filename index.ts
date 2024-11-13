@@ -36,7 +36,7 @@ let socket: ServerWebSocket<unknown> | null = null;
 let msgs: Payload[] = [];
 
 function formatJson(content: string): Content[] {
-  // TODO: handle exceptions
+  // Remove terminal escape codes.
   const lines = content
     .split("\n")
     .map((line) =>
@@ -51,7 +51,7 @@ function formatJson(content: string): Content[] {
   const contents = [];
   const now = new Date().toISOString();
   for (let i = 0; i < lines.length; i++) {
-    if (!lines[i].startsWith("{")) {
+    if (!lines[i].startsWith("{") || !lines[i].endsWith('}')) {
       contents.push({
         message: lines[i],
         timestamp: now,
@@ -65,15 +65,13 @@ function formatJson(content: string): Content[] {
       obj.timestamp = "timestamp" in obj ? obj["timestamp"]: now;
       obj.severity = "severity" in obj ? obj["severity"] : 'INFO';
       contents.push(obj);
-      continue;
     } catch (e) {
-      // console.error(e);
+      contents.push({
+        message: lines[i],
+        timestamp: now,
+        severity: "DEFAULT",
+      }); 
     }
-    contents.push({
-      message: lines[i],
-      timestamp: now,
-      severity: "INFO",
-    });
   }
   return contents;
 }
@@ -149,7 +147,6 @@ async function initLogFollower(
       startPos[fullFilename] = stat.size;
       let file = Bun.file(fullFilename);
       const str = await file.text();
-      // ws.send(`[${JSON.stringify({filename, content: str})}]`);
       ws.send(JSON.stringify([{ filename, contents: formatJson(str) }]));
       console.log(`Initial logs sent for: ${fullFilename}`);
     });
@@ -203,16 +200,14 @@ Bun.serve({
                 } else if (startPos[fullFilename] === stat.size) {
                   return;
                 }
-              } else {
-                startPos[fullFilename] = stat.size;
               }
 
               const str = await Bun.file(fullFilename)
                 .slice(startPos[fullFilename], stat.size)
                 .text();
-              startPos[fullFilename] += str.length;
 
               msgs.push({ filename: filename!, contents: formatJson(str) });
+              startPos[fullFilename] += str.length;
               console.log(`delta logs sent for: ${fullFilename}`);
             });
             console.log(`Detected ${event} in ${fullFilename}`);
