@@ -28,15 +28,15 @@ fuzzy.oninput = (e) => {
   fuzzyVal = e.target.value;
   render();
 };
- 
+
 // We only really care about these on load.
 const liveSearchParams = new URLSearchParams(window.location.search).entries()
   .reduce((acc, val) => {
     acc[val[0]] = val[1].split(',');
     return acc;
-  }, {}); 
- 
-// A bit of a hack to only have the 
+  }, {});
+
+// A bit of a hack to only have the
 // filter-from-searchparam code run on the initial file loads.
 let paramsLoaded = false;
 setTimeout(() => {
@@ -62,7 +62,7 @@ export function pinNewAttr(datum, attrName) {
   } else {
     attributes[key][val] = {};
     attributes[key][val]['count'] = 1;
-  } 
+  }
 }
 
 export function setupDefaultAttrs(structuredLog) {
@@ -96,7 +96,7 @@ function sortByTimestamp(a, b) {
 export function filter() {
   // Every attribute in a group filter is an OR.
   // Every different attribute group is an AND.
-  // Semi-messy strategy: 
+  // Semi-messy strategy:
   //   For every attribute group filter, collect lists that fit the filter.
   //   At the end, merge the lists and use that as the base list for the next filter.
   //   Unfortunately, we need to sort by timestamp at the end again.
@@ -157,7 +157,7 @@ export function renderSidenav() {
           filters.set(attrName, Array.from(new Set([...filters.get(attrName), valName])));
         } else {
           filters.set(attrName, [valName]);
-        } 
+        }
       }
       const text = document.createTextNode(`${valName}: ${val.count}`);
       div.classList.add('attribute-item')

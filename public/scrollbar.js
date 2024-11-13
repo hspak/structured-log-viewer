@@ -33,33 +33,33 @@ export function setupScrollListeners() {
       case 'ArrowUp':
       case 'k':
         if (viewportOffset > 0 ) {
-          updateViewportOffset(viewportOffset - 1);
+          scrollBy(-1);
           updateScrollThumb();
           render(true);
         }
         break;
       case 'u':
         if (viewportOffset > 0 ) {
-          updateViewportOffset(viewportOffset - 10);
+          scrollBy(-10);
           updateScrollThumb();
           render(true);
         }
-        break; 
+        break;
       case 'ArrowDown':
       case 'j':
         if (viewportOffset < (fuzzyData.length - viewportRows.length)) {
-          updateViewportOffset(viewportOffset + 1);
+          scrollBy(1);
           updateScrollThumb();
           render(true);
         }
         break;
       case 'd':
         if (viewportOffset < (fuzzyData.length - viewportRows.length)) {
-          updateViewportOffset(viewportOffset + 10);
+          scrollBy(10);
           updateScrollThumb();
           render(true);
         }
-        break;  
+        break;
     }
   });
 }
@@ -143,7 +143,7 @@ function onContainerWheel(e) {
   scrolling = true;
   window.requestAnimationFrame(() => {
     // TODO: Probably not sufficient
-    const capped = e.deltaY > 0 ? Math.min(e.deltaY, 1) : Math.max(e.deltaY, -1);
+    const capped = e.deltaY > 0 ? Math.min(e.deltaY, 3) : Math.max(e.deltaY, -3);
     scrollBy(capped);
     scrolling = false;
   });

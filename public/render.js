@@ -24,7 +24,7 @@ export function populate(msgs) {
       let normalizedContent = {}
       for (let i=0; i<keys.length; i++) {
         const key = keys[i];
-        normalizedContent[key.toLowerCase()] = content[key];
+        normalizedContent[key.toLowerCase().replaceAll(/[^a-z0-9]+/gi, '-')] = content[key];
       }
       normalizedContent.filename = file;
 
