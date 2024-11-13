@@ -142,8 +142,9 @@ function onContainerWheel(e) {
 
   scrolling = true;
   window.requestAnimationFrame(() => {
-    // TODO: Need to throttle this based on some factor determined by number of lines.
-    scrollBy(e.deltaY);
+    // TODO: Probably not sufficient
+    const capped = e.deltaY > 0 ? Math.min(e.deltaY, 1) : Math.max(e.deltaY, -1);
+    scrollBy(capped);
     scrolling = false;
   });
 }
