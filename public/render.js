@@ -69,6 +69,10 @@ export function render(clearToggles) {
     viewportRows[i].childNodes[1].childNodes[0].nodeValue = `${datum.filename}: `;
     viewportRows[i].childNodes[2].childNodes[0].nodeValue = datum.severity;
     viewportRows[i].childNodes[3].childNodes[0].nodeValue = `${datum.timestamp.substring(0,23)}: `;
+
+    // TODO: very large strings cause rendering delays when scrolling, but
+    // not sure if stuffing the large string into a class is going to cause
+    // headaches with formatting and who know what other issues.
     viewportRows[i].childNodes[4].childNodes[0].nodeValue = datum.message;
 
     if (datum.severity === 'DEBUG') {
@@ -165,7 +169,7 @@ function initDomRow() {
       const dataAttrs = line.getAttributeNames().filter((attr) => attr.startsWith('data-'));
       dataAttrs.forEach((attr) => {
         e.target.childNodes[0].nodeValue = 'hide';
-        const attrName = attr.substring(5);
+        const attrName = attr.substring(5);  // remove 'data-'
         const elem = document.createElement('div');
         const text = document.createTextNode(`${attrName}: ${line.getAttribute(attr)}`);
         elem.replaceChildren(text);

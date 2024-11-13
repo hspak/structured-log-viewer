@@ -1,9 +1,9 @@
-import { defaultAttrs, MAX_ATTR } from './constants.js';
-import { rawData, updateFuzzyData, render } from './render.js';
-import { resetScroll } from './scrollbar.js';
+import { defaultAttrs, MAX_ATTR } from "./constants.js";
+import { rawData, updateFuzzyData, render } from "./render.js";
+import { resetScroll } from "./scrollbar.js";
 
-let sidenav = document.getElementById('attributes');
-let fuzzy = document.getElementById('searchinput');
+let sidenav = document.getElementById("attributes");
+let fuzzy = document.getElementById("searchinput");
 
 let filteredData = [];
 
@@ -19,7 +19,7 @@ let attrRows = [];
 //   }
 // }
 let attributes = {
-  filename: {}
+  filename: {},
 };
 
 let filters = new Map();
@@ -30,18 +30,20 @@ fuzzy.oninput = (e) => {
 };
 
 // We only really care about these on load.
-const liveSearchParams = Array.from(new URLSearchParams(window.location.search).entries())
-  .reduce((acc, val) => {
-    acc[val[0]] = val[1].split(',');
-    return acc;
-  }, {});
+const liveSearchParams = Array.from(
+  new URLSearchParams(window.location.search).entries(),
+).reduce((acc, val) => {
+  acc[val[0]] = val[1].split(",");
+  return acc;
+}, {});
 
 // A bit of a hack to only have the
 // filter-from-searchparam code run on the initial file loads.
 let paramsLoaded = false;
 setTimeout(() => {
   paramsLoaded = true;
-}, 2000)
+  renderSidenav();
+}, 500);
 
 export function isPinnedAttr(attrName) {
   return Object.keys(attributes).includes(attrName);
@@ -58,10 +60,10 @@ export function pinNewAttr(datum, attrName) {
     attributes[key] = {};
   }
   if (val in attributes[key]) {
-    attributes[key][val]['count'] += 1;
+    attributes[key][val]["count"] += 1;
   } else {
     attributes[key][val] = {};
-    attributes[key][val]['count'] = 1;
+    attributes[key][val]["count"] = 1;
   }
 }
 
@@ -76,10 +78,10 @@ export function setupDefaultAttrs(structuredLog) {
       attributes[key] = {};
     }
     if (val in attributes[key]) {
-      attributes[key][val]['count'] += 1;
+      attributes[key][val]["count"] += 1;
     } else {
       attributes[key][val] = {};
-      attributes[key][val]['count'] = 1;
+      attributes[key][val]["count"] = 1;
     }
   }
 }
@@ -113,15 +115,19 @@ export function filter() {
   merge = merge.flat().sort(sortByTimestamp);
   filteredData = filters.size > 0 ? merge : rawData;
 
-  updateFuzzyData(fuzzyVal ? filteredData.filter((data) => {
-    // If the filter input is all lowercase, assume case insensitivity.
-    // Otherwise, match exactly.
-    if (fuzzyVal.toLowerCase() === fuzzyVal) {
-      return data.message.toLowerCase().includes(fuzzyVal);
-    } else {
-      return data.message.includes(fuzzyVal);
-    }
-  }) : filteredData);
+  updateFuzzyData(
+    fuzzyVal
+      ? filteredData.filter((data) => {
+          // If the filter input is all lowercase, assume case insensitivity.
+          // Otherwise, match exactly.
+          if (fuzzyVal.toLowerCase() === fuzzyVal) {
+            return data.message.toLowerCase().includes(fuzzyVal);
+          } else {
+            return data.message.includes(fuzzyVal);
+          }
+        })
+      : filteredData,
+  );
 }
 
 function sortByName(a, b) {
@@ -136,74 +142,95 @@ export function renderSidenav() {
   Object.entries(attributes).forEach(([attrName, values], i) => {
     attrRows[i].replaceChildren();
 
-    const div = document.createElement('div');
+    const div = document.createElement("div");
     const text = document.createTextNode(attrName);
-    div.classList.add('attribute-header');
+    div.classList.add("attribute-header");
     div.append(text);
     attrRows[i].append(div);
-    Object.entries(values).sort(sortByName).forEach(([valName, val]) => {
-      const div = document.createElement('div');
-      const attrInSearchParam = attrName in liveSearchParams && liveSearchParams[attrName].includes(valName);
-      if ('meta' in val && val['meta'] == true) {
-        div.setAttribute("data-meta", val['meta']);
-        div.classList.add('selected')
-      }
-      if (!paramsLoaded && attrInSearchParam) {
-        div.setAttribute("data-meta", val['meta']);
-        div.classList.add('selected')
-        if (filters.has(attrName)) {
-          // This needs to be de-duped because as new files get loaded into the app,
-          // this filter call gets redundantly called for every file.
-          filters.set(attrName, Array.from(new Set([...filters.get(attrName), valName])));
-        } else {
-          filters.set(attrName, [valName]);
-        }
-      }
-      const text = document.createTextNode(`${valName}: ${val.count}`);
-      div.classList.add('attribute-item')
-      div.append(text);
-      div.onclick = (_) => {
-        if ('meta' in val) {
-          val['meta'] = !val['meta'];
-        } else {
-          val['meta'] = true;
+    Object.entries(values)
+      .sort(sortByName)
+      .forEach(([valName, val]) => {
+        const attrValue = document.createElement("button");
+        const attrInSearchParam =
+          attrName in liveSearchParams &&
+          liveSearchParams[attrName].includes(valName);
+        if ("meta" in val && val["meta"] == true) {
+          attrValue.setAttribute("data-meta", val["meta"]);
+          attrValue.classList.add("selected");
         }
 
-        const filterKey = valName;
-        const searchparams = new URLSearchParams(window.location.search);
-        if (val['meta']) {
+        if (!paramsLoaded && attrInSearchParam) {
+          attrValue.setAttribute("data-meta", true);
+          val["meta"] = true;
+          attrValue.classList.add("selected");
           if (filters.has(attrName)) {
-            filters.set(attrName, [...filters.get(attrName), filterKey]);
-            searchparams.set(attrName, filters.get(attrName));
+            // This needs to be de-duped because as new files get loaded into the app,
+            // this filter call gets redundantly called for every file.
+            filters.set(
+              attrName,
+              Array.from(new Set([...filters.get(attrName), valName])),
+            );
           } else {
-            filters.set(attrName, [filterKey]);
-            searchparams.set(attrName, [filterKey]);
-          }
-        } else if (filters.has(attrName)) {
-          if (filters.get(attrName).length === 1) {
-            filters.delete(attrName);
-            searchparams.delete(attrName);
-          } else {
-            filters.set(attrName, filters.get(attrName).filter((key) => key !== filterKey));
-            searchparams.set(attrName, filters.get(attrName));
+            filters.set(attrName, [valName]);
           }
         }
-        window.history.replaceState(null, null, `?${searchparams.toString()}`);
 
-        // Go back to top on filters.
-        resetScroll();
+        const attrValueText = document.createTextNode(`${valName}: ${val.count}`);
+        attrValue.classList.add("attribute-item");
+        attrValue.append(attrValueText);
+        attrValue.disabled = !paramsLoaded;
+        attrValue.onclick = (e) => {
+          if ("meta" in val) {
+            val["meta"] = !val["meta"];
+          } else {
+            val["meta"] = true;
+          }
 
-        renderSidenav();
-        render();
-      };
-      attrRows[i].append(div);
-    });
+          const filterKey = valName;
+          const searchparams = new URLSearchParams(window.location.search);
+          if (val["meta"]) {
+            if (filters.has(attrName)) {
+              filters.set(
+                attrName,
+                Array.from(new Set([...filters.get(attrName), valName])),
+              );
+              searchparams.set(attrName, filters.get(attrName));
+            } else {
+              filters.set(attrName, [filterKey]);
+              searchparams.set(attrName, [filterKey]);
+            }
+          } else if (filters.has(attrName)) {
+            if (filters.get(attrName).length === 1) {
+              filters.delete(attrName);
+              searchparams.delete(attrName);
+            } else {
+              filters.set(
+                attrName,
+                filters.get(attrName).filter((key) => key !== filterKey),
+              );
+              searchparams.set(attrName, filters.get(attrName));
+            }
+          }
+          window.history.replaceState(
+            null,
+            null,
+            `?${searchparams.toString()}`,
+          );
+
+          // Go back to top on filters.
+          resetScroll();
+
+          renderSidenav();
+          render();
+        };
+        attrRows[i].append(attrValue);
+      });
   });
 }
 
 export function bootstrapSidenav() {
-  for(let i = 0; i < MAX_ATTR; i++) {
-    const div = document.createElement('div');
+  for (let i = 0; i < MAX_ATTR; i++) {
+    const div = document.createElement("div");
     sidenav.append(div);
     attrRows.push(div);
   }

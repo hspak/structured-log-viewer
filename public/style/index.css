@@ -81,6 +81,7 @@ body {
     text-overflow: ellipsis;
 
     line-height: 1.1rem;
+    width: 86vw;
 }
 
 .message-details {
