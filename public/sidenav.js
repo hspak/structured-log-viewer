@@ -111,6 +111,14 @@ export function filter() {
   }) : filteredData);
 }
 
+function sortByName(a, b) {
+  if (a[0] < b[0]) {
+    return -1;
+  } else {
+    return 1;
+  }
+}
+
 export function renderSidenav() {
   Object.entries(attributes).forEach(([attrName, values], i) => {
     attrRows[i].replaceChildren();
@@ -120,7 +128,7 @@ export function renderSidenav() {
     div.classList.add('attribute-header');
     div.append(text);
     attrRows[i].append(div);
-    Object.entries(values).forEach(([valName, val]) => {
+    Object.entries(values).sort(sortByName).forEach(([valName, val]) => {
       const div = document.createElement('div');
       if ('meta' in val && val['meta'] == true) {
         div.setAttribute("data-meta", val['meta']);
