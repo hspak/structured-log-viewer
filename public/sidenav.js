@@ -95,7 +95,6 @@ export function filter() {
       merge.push(inter.filter((dat) => dat[attrName] === attrVal));
     });
     inter = merge.flat();
-    console.log(inter)
   });
   merge = merge.flat().sort(sortByTimestamp);
   filteredData = filters.size > 0 ? merge : rawData;
@@ -145,19 +144,25 @@ export function renderSidenav() {
         }
 
         const filterKey = valName;
+        const searchparams = new URLSearchParams(window.location.search);
         if (val['meta']) {
           if (filters.has(attrName)) {
             filters.set(attrName, [...filters.get(attrName), filterKey]);
+            searchparams.set(attrName, filters.get(attrName));
           } else {
             filters.set(attrName, [filterKey]);
+            searchparams.set(attrName, [filterKey]);
           }
         } else if (filters.has(attrName)) {
           if (filters.get(attrName).length === 1) {
             filters.delete(attrName);
+            searchparams.delete(attrName);
           } else {
             filters.set(attrName, filters.get(attrName).filter((key) => key !== filterKey));
+            searchparams.set(attrName, filters.get(attrName));
           }
         }
+        window.history.replaceState(null, null, `?${searchparams.toString()}`);
 
         // Go back to top on filters.
         resetScroll();
