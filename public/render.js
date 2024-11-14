@@ -65,9 +65,8 @@ export function render() {
       while (viewportRows[i].childNodes.length > 5) {
         viewportRows[i].removeChild(viewportRows[i].lastChild);
       }
-      continue;
     } else if (datum.selected && !viewportRows[i].classList.contains('selected')) {
-      showDetails(viewportRows[i], viewportRows[i].childNodes[0].childNodes[0]);
+      showDetails(viewportRows[i], viewportRows[i].childNodes[0].childNodes[0], i+viewportOffset);
     }
 
     viewportRows[i].childNodes[1].childNodes[0].nodeValue = `${datum.line.filename}: `;
@@ -77,7 +76,7 @@ export function render() {
     // TODO: very large strings cause rendering delays when scrolling, but
     // not sure if stuffing the large string into a class is going to cause
     // headaches with formatting and who know what other issues.
-    viewportRows[i].childNodes[4].childNodes[0].nodeValue = datum.line.message;
+    viewportRows[i].childNodes[4].childNodes[0].nodeValue = datum.line.message.substring(0,200);
 
     if (datum.line.severity === 'DEBUG') {
       viewportRows[i].childNodes[2].className = 'severity-debug';
@@ -88,7 +87,6 @@ export function render() {
     } else {
       viewportRows[i].childNodes[2].className = 'severity-info';
     }
-
 
     // Clear any state attributes before resetting.
     Object.keys(viewportRows[i].dataset).forEach((dataAttr) => {
@@ -141,7 +139,7 @@ export function setupResizeListener() {
   });
 }
 
-function showDetails(lineElem, buttonElem) {
+function showDetails(lineElem, buttonElem, lineRow) {
   lineElem.classList.add('selected');
   const dataAttrs = lineElem.getAttributeNames().filter((attr) => attr.startsWith('data-'));
   dataAttrs.forEach((attr) => {
@@ -168,6 +166,13 @@ function showDetails(lineElem, buttonElem) {
       lineElem.appendChild(pin);
     } 
   })
+
+  // The full message always comes last.
+  const elem = document.createElement('div');
+  const text = document.createTextNode(`message: ${rawData[lineRow].line.message}`);
+  elem.replaceChildren(text);
+  elem.classList.add('message-details');
+  lineElem.appendChild(elem);
 }
 
 function initDomRow() {
@@ -204,7 +209,7 @@ function initDomRow() {
     rawData[rowIndex].selected = !isOpen;
     
     if (!isOpen) {
-      showDetails(lineElem, e.target.childNodes[0]);
+      showDetails(lineElem, e.target.childNodes[0], rowIndex);
     } else {
       e.target.childNodes[0].nodeValue = 'show';
       div.classList.remove('selected');
