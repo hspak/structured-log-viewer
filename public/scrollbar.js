@@ -35,14 +35,14 @@ export function setupScrollListeners() {
         if (viewportOffset > 0 ) {
           scrollBy(-1);
           updateScrollThumb();
-          render(true);
+          render();
         }
         break;
       case 'u':
         if (viewportOffset > 0 ) {
           scrollBy(-10);
           updateScrollThumb();
-          render(true);
+          render();
         }
         break;
       case 'ArrowDown':
@@ -50,14 +50,14 @@ export function setupScrollListeners() {
         if (viewportOffset < (fuzzyData.length - viewportRows.length)) {
           scrollBy(1);
           updateScrollThumb();
-          render(true);
+          render();
         }
         break;
       case 'd':
         if (viewportOffset < (fuzzyData.length - viewportRows.length)) {
           scrollBy(10);
           updateScrollThumb();
-          render(true);
+          render();
         }
         break;
     }

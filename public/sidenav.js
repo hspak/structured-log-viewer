@@ -108,7 +108,7 @@ export function filter() {
   filters.forEach((attrVals, attrName) => {
     merge = [];
     attrVals.forEach((attrVal) => {
-      merge.push(inter.filter((dat) => dat[attrName] === attrVal));
+      merge.push(inter.filter((dat) => dat.line[attrName] === attrVal));
     });
     inter = merge.flat();
   });

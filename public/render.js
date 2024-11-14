@@ -32,7 +32,10 @@ export function populate(msgs) {
       lines.push(normalizedContent);
 
       lines.forEach((line) => {
-        rawData[rawDataLength] = line;
+        rawData[rawDataLength] = {
+          line,
+          selected: false,
+        }
         rawDataLength += 1;
       });
     });
@@ -48,38 +51,39 @@ export function updateViewportOffset(offset) {
   viewportOffset = offset;
 }
 
-export function render(clearToggles) {
+export function render() {
   filter();
-
-  // TODO: This is a bit of a cop out because I don't have a good solution to
-  // keep track of the toggle state per-row. Keep track of toggle state on fuzzyData.
-  document.querySelectorAll('.message-details').forEach(e => e.remove());
 
   const maxRender = Math.min(viewportRows.length, Math.max(0, fuzzyData.length - viewportOffset));
 
   for (let i=0; i<maxRender; i++) {
     const datum = fuzzyData[i + viewportOffset];
 
-    if (clearToggles && viewportRows[i].classList.contains('selected')) {
+    if (!datum.selected && viewportRows[i].classList.contains('selected')) {
       viewportRows[i].classList.remove('selected');
       viewportRows[i].childNodes[0].childNodes[0].nodeValue = 'show';
+      while (viewportRows[i].childNodes.length > 5) {
+        viewportRows[i].removeChild(viewportRows[i].lastChild);
+      }
       continue;
+    } else if (datum.selected && !viewportRows[i].classList.contains('selected')) {
+      showDetails(viewportRows[i], viewportRows[i].childNodes[0].childNodes[0]);
     }
 
-    viewportRows[i].childNodes[1].childNodes[0].nodeValue = `${datum.filename}: `;
-    viewportRows[i].childNodes[2].childNodes[0].nodeValue = datum.severity;
-    viewportRows[i].childNodes[3].childNodes[0].nodeValue = `${datum.timestamp.substring(0,23)}: `;
+    viewportRows[i].childNodes[1].childNodes[0].nodeValue = `${datum.line.filename}: `;
+    viewportRows[i].childNodes[2].childNodes[0].nodeValue = datum.line.severity;
+    viewportRows[i].childNodes[3].childNodes[0].nodeValue = `${datum.line.timestamp.substring(0,23)}: `;
 
     // TODO: very large strings cause rendering delays when scrolling, but
     // not sure if stuffing the large string into a class is going to cause
     // headaches with formatting and who know what other issues.
-    viewportRows[i].childNodes[4].childNodes[0].nodeValue = datum.message;
+    viewportRows[i].childNodes[4].childNodes[0].nodeValue = datum.line.message;
 
-    if (datum.severity === 'DEBUG') {
+    if (datum.line.severity === 'DEBUG') {
       viewportRows[i].childNodes[2].className = 'severity-debug';
-    } else if (datum.severity === 'WARNING') {
+    } else if (datum.line.severity === 'WARNING') {
       viewportRows[i].childNodes[2].className = 'severity-warning';
-    } else if (datum.severity === 'ERROR') {
+    } else if (datum.line.severity === 'ERROR') {
       viewportRows[i].childNodes[2].className = 'severity-error';
     } else {
       viewportRows[i].childNodes[2].className = 'severity-info';
@@ -88,10 +92,12 @@ export function render(clearToggles) {
 
     // Clear any state attributes before resetting.
     Object.keys(viewportRows[i].dataset).forEach((dataAttr) => {
-      viewportRows[i].removeAttribute(`data-${dataAttr}`);
+      if (dataAttr !== 'rowindex') {
+        viewportRows[i].removeAttribute(`data-${dataAttr}`);
+      }
     });
 
-    Object.entries(datum).forEach(([key, val]) => {
+    Object.entries(datum.line).forEach(([key, val]) => {
       if (!reservedNames.includes(key)) {
         const keySanitized = key.replace(/[^a-zA-Z\-]/g, '-');
 
@@ -101,6 +107,7 @@ export function render(clearToggles) {
         viewportRows[i].classList.remove('hide');
       }
     });
+    viewportRows[i].setAttribute(`data-rowindex`, i+viewportOffset);
   }
 
  for (let i=maxRender; i<viewportRows.length; i++) {
@@ -134,6 +141,35 @@ export function setupResizeListener() {
   });
 }
 
+function showDetails(lineElem, buttonElem) {
+  lineElem.classList.add('selected');
+  const dataAttrs = lineElem.getAttributeNames().filter((attr) => attr.startsWith('data-'));
+  dataAttrs.forEach((attr) => {
+    buttonElem.nodeValue = 'hide';
+    const attrName = attr.substring(5);  // remove 'data-'
+    const elem = document.createElement('div');
+    const text = document.createTextNode(`${attrName}: ${lineElem.getAttribute(attr)}`);
+    elem.replaceChildren(text);
+    elem.classList.add('message-details');
+    lineElem.appendChild(elem);
+
+    if (!isPinnedAttr(attrName)) {
+      const pin = document.createElement('button');
+      const pinText = document.createTextNode('pin');
+      pin.classList.add('message-details');
+      pin.replaceChildren(pinText);
+      pin.onclick = (_e) => {
+        rawData.line.forEach((datum) => {
+          pinNewAttr(datum, attrName);
+        })
+        pin.remove();
+        renderSidenav();
+      };
+      lineElem.appendChild(pin);
+    } 
+  })
+}
+
 function initDomRow() {
   const div = document.createElement('div');
 
@@ -162,35 +198,13 @@ function initDomRow() {
 
   div.classList.add('message-line');
   toggle.onclick = (e) => {
-    const line = e.target.parentNode;
+    const lineElem = e.target.parentNode;
     const isOpen = div.classList.contains('selected');
+    const rowIndex = parseInt(lineElem.getAttribute('data-rowindex'), 10);
+    rawData[rowIndex].selected = !isOpen;
+    
     if (!isOpen) {
-      div.classList.add('selected');
-      const dataAttrs = line.getAttributeNames().filter((attr) => attr.startsWith('data-'));
-      dataAttrs.forEach((attr) => {
-        e.target.childNodes[0].nodeValue = 'hide';
-        const attrName = attr.substring(5);  // remove 'data-'
-        const elem = document.createElement('div');
-        const text = document.createTextNode(`${attrName}: ${line.getAttribute(attr)}`);
-        elem.replaceChildren(text);
-        elem.classList.add('message-details');
-        div.appendChild(elem);
-
-        if (!isPinnedAttr(attrName)) {
-          const pin = document.createElement('button');
-          const pinText = document.createTextNode('pin');
-          pin.classList.add('message-details');
-          pin.replaceChildren(pinText);
-          pin.onclick = (_e) => {
-            rawData.forEach((datum) => {
-              pinNewAttr(datum, attrName);
-            })
-            pin.remove();
-            renderSidenav();
-          };
-          div.appendChild(pin);
-        }
-      });
+      showDetails(lineElem, e.target.childNodes[0]);
     } else {
       e.target.childNodes[0].nodeValue = 'show';
       div.classList.remove('selected');
