@@ -1,6 +1,6 @@
-import { defaultAttrs, MAX_ATTR } from "./constants.js";
-import { rawData, updateFuzzyData, render } from "./render.js";
-import { resetScroll } from "./scrollbar.js";
+import { defaultAttrs, MAX_ATTR } from "./constants.mjs";
+import { rawData, updateFuzzyData, render } from "./render.mjs";
+import { resetScroll } from "./scrollbar.mjs";
 
 let sidenav = document.getElementById("attributes");
 let fuzzy = document.getElementById("searchinput");

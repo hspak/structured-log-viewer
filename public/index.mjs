@@ -1,6 +1,6 @@
-import { populate, render, bootstrapRows, setupResizeListener } from './render.js';
-import { setupScrollListeners } from './scrollbar.js';
-import { bootstrapSidenav } from './sidenav.js';
+import { populate, render, bootstrapRows, setupResizeListener } from './render.mjs';
+import { setupScrollListeners } from './scrollbar.mjs';
+import { bootstrapSidenav } from './sidenav.mjs';
 
 let appState = null;                          
 

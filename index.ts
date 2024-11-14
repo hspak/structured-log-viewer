@@ -83,37 +83,37 @@ async function staticFiles() {
         "Content-Type": "text/html",
       },
     }),
-    "/index.js": new Response(await Bun.file("./public/index.js").bytes(), {
+    "/index.mjs": new Response(await Bun.file("./public/index.mjs").bytes(), {
       headers: {
         "Content-Type": "text/javascript",
       },
     }),
-    "/scrollbar.js": new Response(
-      await Bun.file("./public/scrollbar.js").bytes(),
+    "/scrollbar.mjs": new Response(
+      await Bun.file("./public/scrollbar.mjs").bytes(),
       {
         headers: {
           "Content-Type": "text/javascript",
         },
       },
     ),
-    "/sidenav.js": new Response(
-      await Bun.file("./public/sidenav.js").bytes(),
+    "/sidenav.mjs": new Response(
+      await Bun.file("./public/sidenav.mjs").bytes(),
       {
         headers: {
           "Content-Type": "text/javascript",
         },
       },
     ),
-    "/render.js": new Response(
-      await Bun.file("./public/render.js").bytes(),
+    "/render.mjs": new Response(
+      await Bun.file("./public/render.mjs").bytes(),
       {
         headers: {
           "Content-Type": "text/javascript",
         },
       },
     ),
-    "/constants.js": new Response(
-      await Bun.file("./public/constants.js").bytes(),
+    "/constants.mjs": new Response(
+      await Bun.file("./public/constants.mjs").bytes(),
       {
         headers: {
           "Content-Type": "text/javascript",

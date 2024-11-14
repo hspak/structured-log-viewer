@@ -1,5 +1,5 @@
-import { HEIGHT_OFFSET } from './constants.js';
-import { container, fuzzyData, viewportRows, viewportOffset, updateViewportOffset, render } from './render.js';
+import { HEIGHT_OFFSET } from './constants.mjs';
+import { container, fuzzyData, viewportRows, viewportOffset, updateViewportOffset, render } from './render.mjs';
 
 const scrollAreaY = document.createElement("div");
 scrollAreaY.classList.add("scroll-area");

@@ -1,6 +1,6 @@
-import { reservedNames, HEIGHT_OFFSET } from './constants.js';
-import { isPinnedAttr, setupDefaultAttrs,filter, renderSidenav, pinNewAttr } from './sidenav.js';
-import { updateScrollThumb } from './scrollbar.js';
+import { reservedNames, HEIGHT_OFFSET } from './constants.mjs';
+import { isPinnedAttr, setupDefaultAttrs,filter, renderSidenav, pinNewAttr } from './sidenav.mjs';
+import { updateScrollThumb } from './scrollbar.mjs';
 
 export let container = document.getElementById('stuff');
 export let viewportRows = [];
