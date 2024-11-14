@@ -68,7 +68,7 @@ export function render() {
     } else if (datum.selected && !viewportRows[i].classList.contains('selected')) {
       showDetails(viewportRows[i], viewportRows[i].childNodes[0].childNodes[0], i+viewportOffset);
     }
-
+ 
     viewportRows[i].childNodes[1].childNodes[0].nodeValue = `${datum.line.filename}: `;
     viewportRows[i].childNodes[2].childNodes[0].nodeValue = datum.line.severity;
     viewportRows[i].childNodes[3].childNodes[0].nodeValue = `${datum.line.timestamp.substring(0,23)}: `;
@@ -90,9 +90,7 @@ export function render() {
 
     // Clear any state attributes before resetting.
     Object.keys(viewportRows[i].dataset).forEach((dataAttr) => {
-      if (dataAttr !== 'rowindex') {
-        viewportRows[i].removeAttribute(`data-${dataAttr}`);
-      }
+      viewportRows[i].removeAttribute(`data-${dataAttr}`);
     });
 
     Object.entries(datum.line).forEach(([key, val]) => {
@@ -141,7 +139,9 @@ export function setupResizeListener() {
 
 function showDetails(lineElem, buttonElem, lineRow) {
   lineElem.classList.add('selected');
-  const dataAttrs = lineElem.getAttributeNames().filter((attr) => attr.startsWith('data-'));
+  const dataAttrs = lineElem.getAttributeNames()
+    .filter((attr) => attr.startsWith('data-'))
+    .filter(attr => attr !== 'data-rowindex');
   dataAttrs.forEach((attr) => {
     buttonElem.nodeValue = 'hide';
     const attrName = attr.substring(5);  // remove 'data-'
@@ -169,7 +169,7 @@ function showDetails(lineElem, buttonElem, lineRow) {
 
   // The full message always comes last.
   const elem = document.createElement('div');
-  const text = document.createTextNode(`message: ${rawData[lineRow].line.message}`);
+  const text = document.createTextNode(`message: ${fuzzyData[lineRow].line.message}`);
   elem.replaceChildren(text);
   elem.classList.add('message-details');
   lineElem.appendChild(elem);
@@ -206,7 +206,7 @@ function initDomRow() {
     const lineElem = e.target.parentNode;
     const isOpen = div.classList.contains('selected');
     const rowIndex = parseInt(lineElem.getAttribute('data-rowindex'), 10);
-    rawData[rowIndex].selected = !isOpen;
+    fuzzyData[rowIndex].selected = !isOpen;
     
     if (!isOpen) {
       showDetails(lineElem, e.target.childNodes[0], rowIndex);
