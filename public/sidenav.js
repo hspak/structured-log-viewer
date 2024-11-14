@@ -121,9 +121,9 @@ export function filter() {
           // If the filter input is all lowercase, assume case insensitivity.
           // Otherwise, match exactly.
           if (fuzzyVal.toLowerCase() === fuzzyVal) {
-            return data.message.toLowerCase().includes(fuzzyVal);
+            return data.line.message.toLowerCase().includes(fuzzyVal);
           } else {
-            return data.message.includes(fuzzyVal);
+            return data.line.message.includes(fuzzyVal);
           }
         })
       : filteredData,
