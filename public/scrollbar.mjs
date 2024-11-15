@@ -32,33 +32,17 @@ export function setupScrollListeners() {
     switch(event.key) {
       case 'ArrowUp':
       case 'k':
-        if (viewportOffset > 0 ) {
-          scrollBy(-1);
-          updateScrollThumb();
-          render();
-        }
+        scrollBy(-20); // Scroll one row up
         break;
       case 'u':
-        if (viewportOffset > 0 ) {
-          scrollBy(-10);
-          updateScrollThumb();
-          render();
-        }
+        scrollBy(-200); // Scroll 10 rows up
         break;
       case 'ArrowDown':
       case 'j':
-        if (viewportOffset < (fuzzyData.length - viewportRows.length)) {
-          scrollBy(1);
-          updateScrollThumb();
-          render();
-        }
+        scrollBy(20); // Scroll one row down
         break;
       case 'd':
-        if (viewportOffset < (fuzzyData.length - viewportRows.length)) {
-          scrollBy(10);
-          updateScrollThumb();
-          render();
-        }
+        scrollBy(200); // Scroll 10 rows down
         break;
     }
   });
@@ -69,22 +53,28 @@ function preventDefault(e) {
 }
 
 export function updateScrollThumb() {
-  if (fuzzyData.length <= viewportRows.length) {
+  const containerHeight = container.clientHeight;
+  const contentHeight = fuzzyData.length * 20; // rowHeight = 20
+
+  if (contentHeight <= containerHeight) {
     scrollThumbY.style.height = '100%';
     scrollThumbY.style.backgroundColor = '#cccccc';
     return;
-  } else {
-    const ratio = viewportRows.length / fuzzyData.length;
-    const capped = Math.max(ratio, 0.05);
-    scrollThumbHeight = (container.clientHeight - HEIGHT_OFFSET) * capped;
-    scrollThumbY.style.height = `${scrollThumbHeight}px`;
-    scrollThumbY.style.backgroundColor = '#555555';
   }
 
-  // Ensure that the scrollbar stays above the browser when resizing.
-  const windowHeight = container.clientHeight + HEIGHT_OFFSET;
-  if (windowHeight < scrollThumbY.getBoundingClientRect().bottom) {
-    scrollBy(windowHeight - scrollThumbY.getBoundingClientRect().bottom);
+  // Calculate thumb height based on viewport to content ratio
+  const ratio = containerHeight / contentHeight;
+  const capped = Math.max(ratio, 0.05);
+  scrollThumbHeight = containerHeight * capped;
+  scrollThumbY.style.height = `${scrollThumbHeight}px`;
+  scrollThumbY.style.backgroundColor = '#555555';
+
+  // Update thumb position based on current scroll offset
+  const maxScroll = contentHeight - containerHeight;
+  if (maxScroll > 0) {
+    const scrollRatio = scrollOffset / maxScroll;
+    const thumbOffset = scrollRatio * (containerHeight - scrollThumbHeight);
+    scrollThumbY.style.transform = `translateY(${thumbOffset}px)`;
   }
 }
 
@@ -93,29 +83,35 @@ function scrollBy(offset) {
     return;
   }
 
+  const rowHeight = ROW_HEIGHT;
+  const containerHeight = container.clientHeight;
+  const contentHeight = fuzzyData.length * rowHeight;
+  const maxScroll = Math.max(0, contentHeight - containerHeight);
+
   scrollOffset += offset;
+  scrollOffset = Math.max(0, Math.min(scrollOffset, maxScroll));
 
-  const windowHeight = container.clientHeight + HEIGHT_OFFSET;
-  const min = Math.min(scrollOffset, windowHeight);
-  scrollOffset = Math.max(0, min);
-  scrollThumbY.style.transform = `translateY(${scrollOffset}px)`;
+  // Update scroll thumb position
+  const scrollRatio = scrollOffset / maxScroll;
+  const thumbOffset = scrollRatio * (containerHeight - scrollThumbHeight);
+  scrollThumbY.style.transform = `translateY(${thumbOffset}px)`;
 
-  let ratio = Math.min(1, (scrollOffset + scrollThumbHeight + HEIGHT_OFFSET) / (windowHeight));
-
-  updateViewportOffset(scrollOffset > 0
-    ? Math.max(0, Math.floor(ratio * fuzzyData.length) - viewportRows.length)
-    : 0);
-
-  render(true);
+  // Update viewport offset for rendering
+  updateViewportOffset(scrollOffset);
+  render();
 }
 
 function onThumbDrag(e) {
   e.preventDefault();
   e.stopPropagation();
-  scrollOffset += e.movementY;
 
-  // TODO math is VERY off.
-  scrollBy(e.movementY);
+  const containerHeight = container.clientHeight;
+  const contentHeight = fuzzyData.length * 20; // rowHeight = 20
+  const dragRatio = contentHeight / containerHeight;
+  
+  // Scale the movement based on content/container ratio
+  const scrollAmount = e.movementY * dragRatio;
+  scrollBy(scrollAmount);
 }
 
 function onThumbMouseUp() {
@@ -142,9 +138,9 @@ function onContainerWheel(e) {
 
   scrolling = true;
   window.requestAnimationFrame(() => {
-    // TODO: Probably not sufficient
-    const capped = e.deltaY > 0 ? Math.min(e.deltaY, 3) : Math.max(e.deltaY, -3);
-    scrollBy(capped);
+    // Scale the scroll amount for smoother scrolling
+    const scrollAmount = e.deltaY * 2;
+    scrollBy(scrollAmount);
     scrolling = false;
   });
 }

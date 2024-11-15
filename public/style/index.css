@@ -29,8 +29,15 @@ body {
 }
 
 #stuff {
+    position: relative;
+    height: 100%;
 }
 
+.message-line {
+    position: absolute;
+    left: 0;
+    width: 86vw;
+}
 .scroll-area {
     background-color: #cccccc;
     position: absolute;

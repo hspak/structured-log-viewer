@@ -54,12 +54,27 @@ export function updateViewportOffset(offset) {
 export function render() {
   filter();
 
-  const maxRender = Math.min(viewportRows.length, Math.max(0, fuzzyData.length - viewportOffset));
+  const rowHeight = 20; // Height of each row in pixels
+  const containerHeight = container.clientHeight;
+  const visibleRows = Math.ceil(containerHeight / rowHeight);
+  const maxRender = Math.min(viewportRows.length, fuzzyData.length);
 
-  for (let i=0; i<maxRender; i++) {
-    const datum = fuzzyData[i + viewportOffset];
+  for (let i = 0; i < maxRender; i++) {
+    const datum = fuzzyData[i];
+    const row = viewportRows[i];
+    const translateY = i * rowHeight;
+    
+    // Set position using transform
+    row.style.transform = `translateY(${translateY}px)`;
+    
+    // Show/hide rows based on viewport
+    if (translateY < viewportOffset - rowHeight || translateY > viewportOffset + containerHeight) {
+      row.style.visibility = 'hidden';
+    } else {
+      row.style.visibility = 'visible';
+    }
 
-    if (!datum.selected && viewportRows[i].classList.contains('selected')) {
+    if (!datum.selected && row.classList.contains('selected')) {
       viewportRows[i].classList.remove('selected');
       viewportRows[i].childNodes[0].childNodes[0].nodeValue = 'show';
       while (viewportRows[i].childNodes.length > 5) {
