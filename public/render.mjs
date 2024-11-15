@@ -68,7 +68,7 @@ export function render() {
     } else if (datum.selected && !viewportRows[i].classList.contains('selected')) {
       showDetails(viewportRows[i], viewportRows[i].childNodes[0].childNodes[0], i+viewportOffset);
     }
- 
+
     viewportRows[i].childNodes[1].childNodes[0].nodeValue = `${datum.line.filename}: `;
     viewportRows[i].childNodes[2].childNodes[0].nodeValue = datum.line.severity;
     viewportRows[i].childNodes[3].childNodes[0].nodeValue = `${datum.line.timestamp.substring(0,23)}: `;
@@ -163,6 +163,7 @@ function showDetails(lineElem, buttonElem, lineRow) {
       const pinText = document.createTextNode('📌');
       pin.setAttribute('title', 'pin to sidenav');
       pin.classList.add('message-details');
+      pin.classList.add('pin');
       pin.appendChild(pinText);
       pin.onclick = (_e) => {
         rawData.forEach((datum) => {
@@ -227,7 +228,7 @@ function initDomRow() {
     const isOpen = div.classList.contains('selected');
     const rowIndex = parseInt(lineElem.getAttribute('data-rowindex'), 10);
     fuzzyData[rowIndex].selected = !isOpen;
-    
+
     if (!isOpen) {
       showDetails(lineElem, e.target.childNodes[0], rowIndex);
     } else {

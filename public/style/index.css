@@ -150,6 +150,15 @@ body {
     user-select: none;
 }
 
+.pin {
+  font-size: '12px';
+  background: none;
+  border: none;
+}
+.pin:hover {
+  background: #eee;
+}
+
 .hide {
     display: none;
 }
