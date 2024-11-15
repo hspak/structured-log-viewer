@@ -232,6 +232,7 @@ export function bootstrapSidenav() {
   for (let i = 0; i < MAX_ATTR; i++) {
     const div = document.createElement("div");
     sidenav.append(div);
+    div.classList.add('attribute-collection');
     attrRows.push(div);
   }
 }

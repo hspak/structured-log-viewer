@@ -15,7 +15,7 @@ body {
 
 .sidenav {
     flex-direction: column;
-    min-width: 12vw;
+    min-width: 130px;
     max-width: 12vw;
     overflow-y: scroll;
     overflow-x: hidden;
@@ -47,10 +47,17 @@ body {
     width: 12px;
 }
 
+.attribute-collection {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
 .attribute-header {
     font-weight: 600;
     padding: 2px;
 }
+
 .attribute-item {
     margin-left: 0.5rem;
     margin-right: 0.5rem;
@@ -61,6 +68,9 @@ body {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+
+    background: none;
+    border: none;
 }
 
 .attribute-item:hover,
@@ -84,9 +94,30 @@ body {
     width: 86vw;
 }
 
+.message-detail-container {
+    display: flex;
+    flex-direction: column;
+}
+
+.message-detail-row {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    width: 82vw;
+    min-height: 21px;
+}
+
+.detail-gap {
+  padding-left: 37px;
+}
+
+.detail-message {
+  padding-top: 8px;
+}
+
 .message-details {
-    margin-left: 8px;
-    text-wrap: warp;
+    margin-left: 5px;
+    text-wrap: wrap;
 }
 
 .severity-info {
@@ -113,7 +144,7 @@ body {
 }
 
 .toggle {
-    padding: 0;
+    padding: 0 2px 0 0;
     margin: 0 4px 0 0;
     font-family: "SF Mono", monospace;
     user-select: none;

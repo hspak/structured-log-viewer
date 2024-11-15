@@ -142,37 +142,57 @@ function showDetails(lineElem, buttonElem, lineRow) {
   const dataAttrs = lineElem.getAttributeNames()
     .filter((attr) => attr.startsWith('data-'))
     .filter(attr => attr !== 'data-rowindex');
-  dataAttrs.forEach((attr) => {
-    buttonElem.nodeValue = 'hide';
+
+  const detailContainer = document.createElement('div');
+  detailContainer.classList.add('message-detail-container');
+
+  buttonElem.nodeValue = 'hide';
+
+  dataAttrs.sort().forEach((attr) => {
+    const rowContainer = document.createElement('div');
+    rowContainer.classList.add('message-detail-row');
+
     const attrName = attr.substring(5);  // remove 'data-'
     const elem = document.createElement('div');
     const text = document.createTextNode(`${attrName}: ${lineElem.getAttribute(attr)}`);
     elem.replaceChildren(text);
     elem.classList.add('message-details');
-    lineElem.appendChild(elem);
 
     if (!isPinnedAttr(attrName)) {
       const pin = document.createElement('button');
-      const pinText = document.createTextNode('pin');
+      const pinText = document.createTextNode('📌');
+      pin.setAttribute('title', 'pin to sidenav');
       pin.classList.add('message-details');
-      pin.replaceChildren(pinText);
+      pin.appendChild(pinText);
       pin.onclick = (_e) => {
-        rawData.line.forEach((datum) => {
-          pinNewAttr(datum, attrName);
+        rawData.forEach((datum) => {
+          pinNewAttr(datum.line, attrName);
         })
         pin.remove();
+        elem.classList.add('detail-gap');
         renderSidenav();
       };
-      lineElem.appendChild(pin);
-    } 
+      rowContainer.appendChild(pin);
+    } else {
+      elem.classList.add('detail-gap');
+    }
+
+    rowContainer.appendChild(elem);
+    detailContainer.appendChild(rowContainer);
   })
 
   // The full message always comes last.
+  const rowContainer = document.createElement('div');
+  rowContainer.classList.add('message-detail-row');
   const elem = document.createElement('div');
-  const text = document.createTextNode(`message: ${fuzzyData[lineRow].line.message}`);
+  const text = document.createTextNode(`${fuzzyData[lineRow].line.message}`);
   elem.replaceChildren(text);
   elem.classList.add('message-details');
-  lineElem.appendChild(elem);
+  elem.classList.add('detail-message');
+  detailContainer.appendChild(elem);
+  rowContainer.appendChild(detailContainer);
+
+  lineElem.appendChild(rowContainer);
 }
 
 function initDomRow() {
