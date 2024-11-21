@@ -1,10 +1,11 @@
-import { reservedNames, HEIGHT_OFFSET } from './constants.mjs';
+import { reservedNames, HEIGHT_OFFSET, ROW_HEIGHT } from './constants.mjs';
 import { isPinnedAttr, setupDefaultAttrs,filter, renderSidenav, pinNewAttr } from './sidenav.mjs';
 import { updateScrollThumb } from './scrollbar.mjs';
 
 export let container = document.getElementById('stuff');
 export let viewportRows = [];
 export let viewportOffset = 0;
+export let scrollOffset = 0;
 
 export let fuzzyData = [];
 export let rawData = [];
@@ -48,13 +49,22 @@ export function updateFuzzyData(updatedData) {
 }
 
 export function updateViewportOffset(offset) {
-  viewportOffset = offset;
+  if (offset > 0) {
+    viewportOffset = offset;
+  } else {
+    viewportOffset = 0;
+  }
+}
+
+export function updateScrollOffset(offset) {
+  scrollOffset = offset;
 }
 
 export function render() {
   filter();
 
   const maxRender = Math.min(viewportRows.length, Math.max(0, fuzzyData.length - viewportOffset));
+  const rowOffset = scrollOffset % 21;
 
   for (let i=0; i<maxRender; i++) {
     const datum = fuzzyData[i + viewportOffset];
@@ -69,6 +79,7 @@ export function render() {
       showDetails(viewportRows[i], viewportRows[i].childNodes[0].childNodes[0], i+viewportOffset);
     }
 
+    viewportRows[i].style.transform = `translateY(${-rowOffset}px)`;
     viewportRows[i].childNodes[1].childNodes[0].nodeValue = `${datum.line.filename}: `;
     viewportRows[i].childNodes[2].childNodes[0].nodeValue = datum.line.severity;
     viewportRows[i].childNodes[3].childNodes[0].nodeValue = `${datum.line.timestamp.substring(0,23)}: `;
@@ -95,8 +106,6 @@ export function render() {
  for (let i=maxRender; i<viewportRows.length; i++) {
     viewportRows[i].classList.add('hide');
   }
-
-  updateScrollThumb();
 }
 
 export function bootstrapRows() {
@@ -106,11 +115,17 @@ export function bootstrapRows() {
       break;
     }
   }
+
+  // Add 2 more for scrolling
+  initDomRow();
+  initDomRow();
+  initDomRow();
+  initDomRow();
 }
 
 export function setupResizeListener() {
   addEventListener("resize", () => {
-    const maxHeight = container.parentElement.clientHeight - HEIGHT_OFFSET;
+    const maxHeight = container.parentElement.clientHeight - HEIGHT_OFFSET + (4 * ROW_HEIGHT);
     while (container.clientHeight < maxHeight) {
       initDomRow();
     }
@@ -135,6 +150,7 @@ function showDetails(lineElem, buttonElem, lineRow) {
     if (key === 'message') {
       return;
     }
+    console.log(key, val)
 
     const rowContainer = document.createElement('div');
     rowContainer.classList.add('message-detail-row');

@@ -1,5 +1,14 @@
-import { HEIGHT_OFFSET } from './constants.mjs';
-import { container, fuzzyData, viewportRows, viewportOffset, updateViewportOffset, render } from './render.mjs';
+import { HEIGHT_OFFSET, ROW_HEIGHT } from './constants.mjs';
+import {
+  container,
+  fuzzyData,
+  viewportRows,
+  viewportOffset,
+  updateViewportOffset,
+  render,
+  scrollOffset,
+  updateScrollOffset,
+} from './render.mjs';
 
 const scrollAreaY = document.createElement("div");
 scrollAreaY.classList.add("scroll-area");
@@ -7,12 +16,11 @@ scrollAreaY.classList.add("scroll-area");
 const scrollThumbY = document.createElement("div");
 scrollThumbY.classList.add("scroll-thumb");
 
-let scrollOffset = 0;
 let scrolling = false;
 let scrollThumbHeight = 16;
 
 export function resetScroll() {
-  scrollOffset = 0;
+  updateScrollOffset(0);
   scrollBy(0);
 }
 
@@ -33,30 +41,26 @@ export function setupScrollListeners() {
       case 'ArrowUp':
       case 'k':
         if (viewportOffset > 0 ) {
-          scrollBy(-1);
-          updateScrollThumb();
+          scrollBy(-1 * ROW_HEIGHT);
           render();
         }
         break;
       case 'u':
         if (viewportOffset > 0 ) {
-          scrollBy(-10);
-          updateScrollThumb();
+          scrollBy(-10 * ROW_HEIGHT);
           render();
         }
         break;
       case 'ArrowDown':
       case 'j':
         if (viewportOffset < (fuzzyData.length - viewportRows.length)) {
-          scrollBy(1);
-          updateScrollThumb();
+          scrollBy(1 * ROW_HEIGHT);
           render();
         }
         break;
       case 'd':
         if (viewportOffset < (fuzzyData.length - viewportRows.length)) {
-          scrollBy(10);
-          updateScrollThumb();
+          scrollBy(10 * ROW_HEIGHT);
           render();
         }
         break;
@@ -75,7 +79,7 @@ export function updateScrollThumb() {
     return;
   } else {
     const ratio = viewportRows.length / fuzzyData.length;
-    const capped = Math.max(ratio, 0.05);
+    const capped = Math.max(ratio, 0.03);
     scrollThumbHeight = (container.clientHeight - HEIGHT_OFFSET) * capped;
     scrollThumbY.style.height = `${scrollThumbHeight}px`;
     scrollThumbY.style.backgroundColor = '#555555';
@@ -89,30 +93,35 @@ export function updateScrollThumb() {
 }
 
 function scrollBy(offset) {
-  if (scrollThumbY.style.height === '100%') {
+  // Ensure scrolling up to top always snaps to correct position.
+  if (offset < 0 && viewportOffset === 0) {
+    updateScrollOffset(0);
+    render();
+    return;
+  }
+  if (viewportOffset + viewportRows.length >= fuzzyData.length && offset > 0) {
+    updateViewportOffset(fuzzyData.length - viewportOffset);
+    updateScrollOffset(scrollOffset + offset);
     return;
   }
 
-  scrollOffset += offset;
+  let ratio = viewportOffset / fuzzyData.length;
+  const thumbOffset = (container.clientHeight - 90) * ratio;
+  scrollThumbY.style.transform = `translateY(${thumbOffset}px)`;
 
-  const windowHeight = container.clientHeight + HEIGHT_OFFSET;
-  const min = Math.min(scrollOffset, windowHeight);
-  scrollOffset = Math.max(0, min);
-  scrollThumbY.style.transform = `translateY(${scrollOffset}px)`;
-
-  let ratio = Math.min(1, (scrollOffset + scrollThumbHeight + HEIGHT_OFFSET) / (windowHeight));
-
-  updateViewportOffset(scrollOffset > 0
-    ? Math.max(0, Math.floor(ratio * fuzzyData.length) - viewportRows.length)
-    : 0);
-
+  updateScrollOffset(scrollOffset + offset);
+  updateViewportOffset(Math.floor(scrollOffset/ROW_HEIGHT));
+  updateScrollThumb();
   render(true);
+
+  console.log('scroll', scrollOffset, 'viewport', viewportOffset, 'thumb', thumbOffset);
 }
 
 function onThumbDrag(e) {
   e.preventDefault();
   e.stopPropagation();
-  scrollOffset += e.movementY;
+  updateScrollOffset(scrollOffset + e.movementY);
+  console.log(e.movementY)
 
   // TODO math is VERY off.
   scrollBy(e.movementY);
@@ -143,8 +152,8 @@ function onContainerWheel(e) {
   scrolling = true;
   window.requestAnimationFrame(() => {
     // TODO: Probably not sufficient
-    const capped = e.deltaY > 0 ? Math.min(e.deltaY, 3) : Math.max(e.deltaY, -3);
-    scrollBy(capped);
+    // const capped = e.deltaY > 0 ? Math.min(e.deltaY, 3) : Math.max(e.deltaY, -3);
+    scrollBy(e.deltaY);
     scrolling = false;
   });
 }
