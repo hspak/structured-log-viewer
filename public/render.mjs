@@ -131,7 +131,11 @@ function showDetails(lineElem, buttonElem, lineRow) {
   buttonElem.nodeValue = 'hide';
 
   const dataAttrs = fuzzyData[lineRow].line;
-  Object.entries(dataAttrs).forEach(([key, val]) => {
+  Object.entries(dataAttrs).sort().forEach(([key, val]) => {
+    if (key === 'message') {
+      return;
+    }
+
     const rowContainer = document.createElement('div');
     rowContainer.classList.add('message-detail-row');
 
@@ -166,6 +170,7 @@ function showDetails(lineElem, buttonElem, lineRow) {
   })
 
   // The full message always comes last.
+  // TODO: don't clobber multi-line logs
   const rowContainer = document.createElement('div');
   rowContainer.classList.add('message-detail-row');
   const elem = document.createElement('div');
