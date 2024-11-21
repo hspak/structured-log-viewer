@@ -88,21 +88,7 @@ export function render() {
       viewportRows[i].childNodes[2].className = 'severity-info';
     }
 
-    // Clear any state attributes before resetting.
-    Object.keys(viewportRows[i].dataset).forEach((dataAttr) => {
-      viewportRows[i].removeAttribute(`data-${dataAttr}`);
-    });
-
-    Object.entries(datum.line).forEach(([key, val]) => {
-      if (!reservedNames.includes(key)) {
-        const keySanitized = key.replace(/[^a-zA-Z\-]/g, '-');
-
-        // This seems to normalize to all lowercase
-        viewportRows[i].setAttribute(`data-${keySanitized}`, val);
-
-        viewportRows[i].classList.remove('hide');
-      }
-    });
+    viewportRows[i].classList.remove('hide');
     viewportRows[i].setAttribute(`data-rowindex`, i+viewportOffset);
   }
 
@@ -139,22 +125,19 @@ export function setupResizeListener() {
 
 function showDetails(lineElem, buttonElem, lineRow) {
   lineElem.classList.add('selected');
-  const dataAttrs = lineElem.getAttributeNames()
-    .filter((attr) => attr.startsWith('data-'))
-    .filter(attr => attr !== 'data-rowindex');
-
   const detailContainer = document.createElement('div');
   detailContainer.classList.add('message-detail-container');
 
   buttonElem.nodeValue = 'hide';
 
-  dataAttrs.sort().forEach((attr) => {
+  const dataAttrs = fuzzyData[lineRow].line;
+  Object.entries(dataAttrs).forEach(([key, val]) => {
     const rowContainer = document.createElement('div');
     rowContainer.classList.add('message-detail-row');
 
-    const attrName = attr.substring(5);  // remove 'data-'
+    const attrName = key
     const elem = document.createElement('div');
-    const text = document.createTextNode(`${attrName}: ${lineElem.getAttribute(attr)}`);
+    const text = document.createTextNode(`${attrName}: ${val}`);
     elem.replaceChildren(text);
     elem.classList.add('message-details');
 
