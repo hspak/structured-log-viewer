@@ -1,6 +1,6 @@
 import { defaultAttrs, MAX_ATTR } from "./constants.mjs";
 import { rawData, updateFuzzyData, render } from "./render.mjs";
-import { resetScroll } from "./scrollbar.mjs";
+import { resetScroll, updateScrollThumb } from "./scrollbar.mjs";
 
 let sidenav = document.getElementById("attributes");
 let fuzzy = document.getElementById("searchinput");
@@ -222,10 +222,12 @@ export function renderSidenav() {
 
           renderSidenav();
           render();
+          updateScrollThumb();
         };
         attrRows[i].append(attrValue);
       });
   });
+  updateScrollThumb();
 }
 
 export function bootstrapSidenav() {

@@ -150,7 +150,6 @@ function showDetails(lineElem, buttonElem, lineRow) {
     if (key === 'message') {
       return;
     }
-    console.log(key, val)
 
     const rowContainer = document.createElement('div');
     rowContainer.classList.add('message-detail-row');

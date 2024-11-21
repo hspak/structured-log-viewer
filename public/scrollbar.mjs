@@ -22,6 +22,7 @@ let scrollThumbHeight = 16;
 export function resetScroll() {
   updateScrollOffset(0);
   scrollBy(0);
+  updateScrollThumb();
 }
 
 export function setupScrollListeners() {
@@ -93,6 +94,10 @@ export function updateScrollThumb() {
 }
 
 function scrollBy(offset) {
+  if (scrollThumbY.style.height === '100%') {
+    return;
+  };
+
   // Ensure scrolling up to top always snaps to correct position.
   if (offset < 0 && viewportOffset === 0) {
     updateScrollOffset(0);
