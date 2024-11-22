@@ -92,6 +92,10 @@ function scrollBy(offset) {
     return;
   };
 
+  if (offset > 0 && scrollOffset > (fuzzyData.length * ROW_HEIGHT) - HEIGHT_OFFSET) {
+    return;
+  }
+
   // Ensure scrolling up to top always snaps to correct position.
   if (offset < 0 && viewportOffset === 0) {
     updateScrollOffset(0);

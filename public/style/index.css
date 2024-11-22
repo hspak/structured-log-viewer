@@ -75,9 +75,12 @@ body {
     border: none;
 }
 
-.attribute-item:hover,
-.message-line:hover {
+.attribute-item:hover {
     background-color: #dddddd;
+}
+
+.message-line:hover {
+    border-color: #bbbbbb;
 }
 
 .selected {
@@ -86,6 +89,9 @@ body {
 }
 
 .message-line {
+    border-style: solid;
+    border-color: #ffffff;
+    border-width: 1px;
     display: block;
     font-family: "San Francisco", monospace;
     font-size: 12px;
@@ -147,10 +153,12 @@ body {
 }
 
 .toggle {
-    padding: 0 2px 0 0;
-    margin: 0 4px 0 0;
+    text-align: center;
+    padding: 0 1px;
+    margin: 1px 4px 0 0;
     font-family: "SF Mono", monospace;
     user-select: none;
+    font-size: 0.7rem;
 }
 
 .pin {
@@ -171,4 +179,6 @@ body {
 }
 .searchbar {
   z-index: 1;
+  background-color: white;
+  margin-bottom: 2px;
 }

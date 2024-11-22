@@ -43,7 +43,7 @@ let paramsLoaded = false;
 setTimeout(() => {
   paramsLoaded = true;
   renderSidenav();
-}, 200);
+}, 500);
 
 export function isPinnedAttr(attrName) {
   return Object.keys(attributes).includes(attrName);
