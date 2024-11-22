@@ -1,4 +1,4 @@
-import { HEIGHT_OFFSET, ROW_HEIGHT } from './constants.mjs';
+import { HEIGHT_OFFSET, ROW_HEIGHT, SPILL_COUNT } from './constants.mjs';
 import {
   container,
   fuzzyData,
@@ -54,13 +54,13 @@ export function setupScrollListeners() {
         break;
       case 'ArrowDown':
       case 'j':
-        if (viewportOffset < (fuzzyData.length - viewportRows.length)) {
+        if (viewportOffset <= (fuzzyData.length - viewportRows.length + SPILL_COUNT)) {
           scrollBy(1 * ROW_HEIGHT);
           render();
         }
         break;
       case 'd':
-        if (viewportOffset < (fuzzyData.length - viewportRows.length)) {
+        if (viewportOffset <= (fuzzyData.length - viewportRows.length + SPILL_COUNT)) {
           scrollBy(10 * ROW_HEIGHT);
           render();
         }
@@ -81,15 +81,9 @@ export function updateScrollThumb() {
   } else {
     const ratio = viewportRows.length / fuzzyData.length;
     const capped = Math.max(ratio, 0.03);
-    scrollThumbHeight = (container.clientHeight - HEIGHT_OFFSET) * capped;
+    scrollThumbHeight = (window.innerHeight - HEIGHT_OFFSET) * capped;
     scrollThumbY.style.height = `${scrollThumbHeight}px`;
     scrollThumbY.style.backgroundColor = '#555555';
-  }
-
-  // Ensure that the scrollbar stays above the browser when resizing.
-  const windowHeight = container.clientHeight + HEIGHT_OFFSET;
-  if (windowHeight < scrollThumbY.getBoundingClientRect().bottom) {
-    scrollBy(windowHeight - scrollThumbY.getBoundingClientRect().bottom);
   }
 }
 
@@ -104,22 +98,18 @@ function scrollBy(offset) {
     render();
     return;
   }
-  if (viewportOffset + viewportRows.length >= fuzzyData.length && offset > 0) {
-    updateViewportOffset(fuzzyData.length - viewportOffset);
-    updateScrollOffset(scrollOffset + offset);
-    return;
-  }
 
-  let ratio = viewportOffset / fuzzyData.length;
-  const thumbOffset = (container.clientHeight - 90) * ratio;
-  scrollThumbY.style.transform = `translateY(${thumbOffset}px)`;
+  // Prevent the scrollbar from shrinking any further when scrolling past the last row.
+  if (viewportOffset <= fuzzyData.length - viewportRows.length) {
+    let ratio = viewportOffset / fuzzyData.length;
+    const thumbOffset = (window.innerHeight - HEIGHT_OFFSET) * ratio;
+    scrollThumbY.style.transform = `translateY(${thumbOffset}px)`;
+  }
 
   updateScrollOffset(scrollOffset + offset);
   updateViewportOffset(Math.floor(scrollOffset/ROW_HEIGHT));
   updateScrollThumb();
   render(true);
-
-  console.log('scroll', scrollOffset, 'viewport', viewportOffset, 'thumb', thumbOffset);
 }
 
 function onThumbDrag(e) {

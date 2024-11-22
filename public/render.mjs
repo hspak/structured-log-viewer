@@ -1,4 +1,4 @@
-import { reservedNames, HEIGHT_OFFSET, ROW_HEIGHT } from './constants.mjs';
+import { HEIGHT_OFFSET, ROW_HEIGHT, SPILL_COUNT } from './constants.mjs';
 import { isPinnedAttr, setupDefaultAttrs,filter, renderSidenav, pinNewAttr } from './sidenav.mjs';
 import { updateScrollThumb } from './scrollbar.mjs';
 
@@ -116,11 +116,10 @@ export function bootstrapRows() {
     }
   }
 
-  // Add 2 more for scrolling
-  initDomRow();
-  initDomRow();
-  initDomRow();
-  initDomRow();
+  // Add more rows for scrolling
+  for (let i=0; i<SPILL_COUNT; i++) {
+    initDomRow();
+  }
 }
 
 export function setupResizeListener() {
