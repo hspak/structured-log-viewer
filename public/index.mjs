@@ -27,4 +27,3 @@ socket.onmessage = (event) => {
     logger.error('Got message before ready');
   }
 }
-

@@ -12,6 +12,26 @@ export let rawData = [];
 
 let rawDataLength = 0;
 
+let showFilename = true;
+let toggleFilename = document.getElementById('hide-filename');
+toggleFilename.onchange = () => {
+  showFilename = !showFilename;
+  console.log('file', showFilename);
+  render();
+};
+let showSeverity = true;
+let toggleSeverity = document.getElementById('hide-severity');
+toggleSeverity.onchange = () => {
+  showSeverity = !showSeverity;
+  render();
+};
+let showTimestamp = true;
+let toggleTimestamp = document.getElementById('hide-timestamp');
+toggleTimestamp.onchange = () => {
+  showTimestamp = !showTimestamp;
+  render();
+};
+
 export function populate(msgs) {
   msgs.forEach((msg) => {
     const file = msg.filename;
@@ -80,24 +100,38 @@ export function render() {
     }
 
     viewportRows[i].style.transform = `translateY(${-rowOffset}px)`;
-    viewportRows[i].childNodes[1].childNodes[0].nodeValue = `${datum.line.filename}: `;
-    viewportRows[i].childNodes[2].childNodes[0].nodeValue = datum.line.severity;
-    viewportRows[i].childNodes[3].childNodes[0].nodeValue = `${datum.line.timestamp.substring(0,23)}: `;
+    if (showFilename) {
+      viewportRows[i].childNodes[1].childNodes[0].nodeValue = `${datum.line.filename}: `;
+    } else {
+      viewportRows[i].childNodes[1].childNodes[0].nodeValue = '';
+    }
+
+    if (showSeverity) {
+      viewportRows[i].childNodes[2].childNodes[0].nodeValue = datum.line.severity;
+      if (datum.line.severity === 'DEBUG') {
+        viewportRows[i].childNodes[2].className = 'severity-debug';
+      } else if (datum.line.severity === 'WARNING') {
+        viewportRows[i].childNodes[2].className = 'severity-warning';
+      } else if (datum.line.severity === 'ERROR') {
+        viewportRows[i].childNodes[2].className = 'severity-error';
+      } else {
+        viewportRows[i].childNodes[2].className = 'severity-info';
+      }
+    } else {
+      viewportRows[i].childNodes[2].childNodes[0].nodeValue = '';
+      viewportRows[i].childNodes[2].className = '';
+    }
+
+    if (showTimestamp) {
+      viewportRows[i].childNodes[3].childNodes[0].nodeValue = `${datum.line.timestamp.substring(0,23)}: `;
+    } else {
+      viewportRows[i].childNodes[3].childNodes[0].nodeValue = '';
+    }
 
     // TODO: very large strings cause rendering delays when scrolling, but
     // not sure if stuffing the large string into a class is going to cause
     // headaches with formatting and who know what other issues.
-    viewportRows[i].childNodes[4].childNodes[0].nodeValue = datum.line.message.substring(0,200);
-
-    if (datum.line.severity === 'DEBUG') {
-      viewportRows[i].childNodes[2].className = 'severity-debug';
-    } else if (datum.line.severity === 'WARNING') {
-      viewportRows[i].childNodes[2].className = 'severity-warning';
-    } else if (datum.line.severity === 'ERROR') {
-      viewportRows[i].childNodes[2].className = 'severity-error';
-    } else {
-      viewportRows[i].childNodes[2].className = 'severity-info';
-    }
+    viewportRows[i].childNodes[4].childNodes[0].nodeValue = datum.line.message.substring(0,300);
 
     viewportRows[i].classList.remove('hide');
     viewportRows[i].setAttribute(`data-rowindex`, i+viewportOffset);
@@ -111,7 +145,7 @@ export function render() {
 export function bootstrapRows() {
   while (true) {
     initDomRow();
-    if ((container.clientHeight) > (container.parentElement.clientHeight - HEIGHT_OFFSET)) {
+    if ((container.clientHeight) > (window.innerHeight - HEIGHT_OFFSET)) {
       break;
     }
   }
