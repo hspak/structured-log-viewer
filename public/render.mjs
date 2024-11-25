@@ -16,7 +16,6 @@ let showFilename = true;
 let toggleFilename = document.getElementById('hide-filename');
 toggleFilename.onchange = () => {
   showFilename = !showFilename;
-  console.log('file', showFilename);
   render();
 };
 let showSeverity = true;
@@ -96,7 +95,7 @@ export function render() {
         viewportRows[i].removeChild(viewportRows[i].lastChild);
       }
     } else if (datum.selected && !viewportRows[i].classList.contains('selected')) {
-      showDetails(viewportRows[i], viewportRows[i].childNodes[0].childNodes[0], i+viewportOffset);
+      showDetails(viewportRows[i], viewportRows[i].childNodes[0].childNodes[0]);
     }
 
     viewportRows[i].style.transform = `translateY(${-rowOffset}px)`;
@@ -171,12 +170,14 @@ export function setupResizeListener() {
   });
 }
 
-function showDetails(lineElem, buttonElem, lineRow) {
+// TODO: broken on scroll, all toggles show same data
+function showDetails(lineElem, buttonElem) {
   lineElem.classList.add('selected');
   const detailContainer = document.createElement('div');
   detailContainer.classList.add('message-detail-container');
 
   buttonElem.nodeValue = 'hide';
+  const lineRow = parseInt(lineElem.getAttribute('data-rowindex'), 10);
 
   const dataAttrs = fuzzyData[lineRow].line;
   Object.entries(dataAttrs).sort().forEach(([key, val]) => {
@@ -219,6 +220,7 @@ function showDetails(lineElem, buttonElem, lineRow) {
 
   // The full message always comes last.
   // TODO: don't clobber multi-line logs
+  console.log(lineElem.innerText, 'row', lineRow);
   const rowContainer = document.createElement('div');
   rowContainer.classList.add('message-detail-row');
   const elem = document.createElement('div');
@@ -266,7 +268,7 @@ function initDomRow() {
     fuzzyData[rowIndex].selected = !isOpen;
 
     if (!isOpen) {
-      showDetails(lineElem, e.target.childNodes[0], rowIndex);
+      showDetails(lineElem, e.target.childNodes[0]);
     } else {
       e.target.childNodes[0].nodeValue = 'show';
       div.classList.remove('selected');
