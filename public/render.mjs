@@ -83,11 +83,14 @@ export function render() {
   filter();
 
   const maxRender = Math.min(viewportRows.length, Math.max(0, fuzzyData.length - viewportOffset));
-  const rowOffset = scrollOffset % 21;
+
+  // TODO: this assumption makes scrolling jerky if any logs are expanded
+  const rowOffset = scrollOffset % ROW_HEIGHT;
 
   for (let i=0; i<maxRender; i++) {
     const datum = fuzzyData[i + viewportOffset];
 
+    // TODO: broken on scroll, all toggles show same data if expanded and scrolling
     if (!datum.selected && viewportRows[i].classList.contains('selected')) {
       viewportRows[i].classList.remove('selected');
       viewportRows[i].childNodes[0].childNodes[0].nodeValue = 'show';
@@ -95,8 +98,9 @@ export function render() {
         viewportRows[i].removeChild(viewportRows[i].lastChild);
       }
     } else if (datum.selected && !viewportRows[i].classList.contains('selected')) {
-      showDetails(viewportRows[i], viewportRows[i].childNodes[0].childNodes[0]);
+      showDetails(viewportRows[i], viewportRows[i].childNodes[0].childNodes[0], i+viewportOffset);
     }
+
 
     viewportRows[i].style.transform = `translateY(${-rowOffset}px)`;
     if (showFilename) {
@@ -170,14 +174,12 @@ export function setupResizeListener() {
   });
 }
 
-// TODO: broken on scroll, all toggles show same data
-function showDetails(lineElem, buttonElem) {
+function showDetails(lineElem, buttonElem, lineRow) {
   lineElem.classList.add('selected');
   const detailContainer = document.createElement('div');
   detailContainer.classList.add('message-detail-container');
 
   buttonElem.nodeValue = 'hide';
-  const lineRow = parseInt(lineElem.getAttribute('data-rowindex'), 10);
 
   const dataAttrs = fuzzyData[lineRow].line;
   Object.entries(dataAttrs).sort().forEach(([key, val]) => {
@@ -268,7 +270,7 @@ function initDomRow() {
     fuzzyData[rowIndex].selected = !isOpen;
 
     if (!isOpen) {
-      showDetails(lineElem, e.target.childNodes[0]);
+      showDetails(lineElem, e.target.childNodes[0], rowIndex);
     } else {
       e.target.childNodes[0].nodeValue = 'show';
       div.classList.remove('selected');
