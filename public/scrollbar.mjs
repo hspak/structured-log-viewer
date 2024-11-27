@@ -85,6 +85,13 @@ export function updateScrollThumb() {
     scrollThumbY.style.height = `${scrollThumbHeight}px`;
     scrollThumbY.style.backgroundColor = '#555555';
   }
+
+  // Prevent the scrollbar from shrinking any further when scrolling past the last row.
+  if (viewportOffset <= fuzzyData.length - viewportRows.length) {
+    let ratio = viewportOffset / fuzzyData.length;
+    const thumbOffset = (window.innerHeight - HEIGHT_OFFSET) * ratio;
+    scrollThumbY.style.transform = `translateY(${thumbOffset}px)`;
+  }
 }
 
 function scrollBy(offset) {
@@ -103,13 +110,6 @@ function scrollBy(offset) {
     return;
   }
 
-  // Prevent the scrollbar from shrinking any further when scrolling past the last row.
-  if (viewportOffset <= fuzzyData.length - viewportRows.length) {
-    let ratio = viewportOffset / fuzzyData.length;
-    const thumbOffset = (window.innerHeight - HEIGHT_OFFSET) * ratio;
-    scrollThumbY.style.transform = `translateY(${thumbOffset}px)`;
-  }
-
   updateScrollOffset(scrollOffset + offset);
   updateViewportOffset(Math.floor(scrollOffset/ROW_HEIGHT));
   updateScrollThumb();
@@ -119,11 +119,9 @@ function scrollBy(offset) {
 function onThumbDrag(e) {
   e.preventDefault();
   e.stopPropagation();
-  updateScrollOffset(scrollOffset + e.movementY);
-  console.log(e.movementY)
 
-  // TODO math is VERY off.
-  scrollBy(e.movementY);
+  const reverseRatio = fuzzyData.length / (window.innerHeight - HEIGHT_OFFSET) * ROW_HEIGHT;
+  scrollBy(reverseRatio * e.movementY);
 }
 
 function onThumbMouseUp() {

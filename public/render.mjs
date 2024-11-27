@@ -222,7 +222,6 @@ function showDetails(lineElem, buttonElem, lineRow) {
 
   // The full message always comes last.
   // TODO: don't clobber multi-line logs
-  console.log(lineElem.innerText, 'row', lineRow);
   const rowContainer = document.createElement('div');
   rowContainer.classList.add('message-detail-row');
   const elem = document.createElement('div');
