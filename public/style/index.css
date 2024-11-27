@@ -15,8 +15,8 @@ body {
 
 .sidenav {
     flex-direction: column;
-    min-width: 130px;
-    max-width: 12vw;
+    min-width: 164px;
+    max-width: 164px;
     overflow-y: scroll;
     overflow-x: hidden;
 }
@@ -118,7 +118,6 @@ body {
     display: flex;
     flex-direction: row;
     align-items: center;
-    width: 82vw;
     min-height: 21px;
 }
 

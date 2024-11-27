@@ -86,26 +86,38 @@ export function updateScrollThumb() {
     scrollThumbY.style.backgroundColor = '#555555';
   }
 
+  // TODO: thumb still goes below screen.
   // Prevent the scrollbar from shrinking any further when scrolling past the last row.
   if (viewportOffset <= fuzzyData.length - viewportRows.length) {
     let ratio = viewportOffset / fuzzyData.length;
     const thumbOffset = (window.innerHeight - HEIGHT_OFFSET) * ratio;
-    scrollThumbY.style.transform = `translateY(${thumbOffset}px)`;
+
+    if (thumbOffset < (window.innerHeight - HEIGHT_OFFSET)) {
+      scrollThumbY.style.transform = `translateY(${thumbOffset}px)`;
+    }
   }
 }
 
 function scrollBy(offset) {
+  // No scroll thumb = no scroll.
   if (scrollThumbY.style.height === '100%') {
     return;
   };
 
-  if (offset > 0 && scrollOffset > (fuzzyData.length * ROW_HEIGHT) - HEIGHT_OFFSET) {
+  // TODO: Something is dynamically off here.
+  if (offset > 0 && (scrollOffset + offset) > (fuzzyData.length * ROW_HEIGHT) + HEIGHT_OFFSET + (5 * ROW_HEIGHT)- window.innerHeight) {
+    updateScrollOffset((fuzzyData.length * ROW_HEIGHT) + HEIGHT_OFFSET + (5 * ROW_HEIGHT) - window.innerHeight);
+    updateViewportOffset(Math.floor(scrollOffset/ROW_HEIGHT));
+    updateScrollThumb();
+    render();
     return;
   }
+  // console.log(scrollOffset + offset, (fuzzyData.length * ROW_HEIGHT) - HEIGHT_OFFSET)
 
   // Ensure scrolling up to top always snaps to correct position.
   if (offset < 0 && viewportOffset === 0) {
     updateScrollOffset(0);
+    updateViewportOffset(0);
     render();
     return;
   }
@@ -113,7 +125,7 @@ function scrollBy(offset) {
   updateScrollOffset(scrollOffset + offset);
   updateViewportOffset(Math.floor(scrollOffset/ROW_HEIGHT));
   updateScrollThumb();
-  render(true);
+  render();
 }
 
 function onThumbDrag(e) {
