@@ -54,7 +54,6 @@ export function populate(msgs) {
       lines.push(normalizedContent);
 
       lines.forEach((line) => {
-        console.log(line.message)
         rawData[rawDataLength] = {
           line,
           selected: false,
