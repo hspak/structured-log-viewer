@@ -194,6 +194,8 @@ Bun.serve({
               }
 
               if (fullFilename in startPos) {
+                // TODO: handle this.
+                // The file shrunk size we last read it.
                 if (startPos[fullFilename] > stat.size) {
                   startPos[fullFilename] = 0;
                   // ws.send("clear");
@@ -202,6 +204,8 @@ Bun.serve({
                 }
               }
 
+              // TODO: Something is broken here.
+              // The number of log we see is more than what the file actually has.
               const str = await Bun.file(fullFilename)
                 .slice(startPos[fullFilename], stat.size)
                 .text();

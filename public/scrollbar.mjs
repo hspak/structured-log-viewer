@@ -78,23 +78,20 @@ export function updateScrollThumb() {
     scrollThumbY.style.height = '100%';
     scrollThumbY.style.backgroundColor = '#cccccc';
     return;
-  } else {
-    const ratio = viewportRows.length / fuzzyData.length;
-    const capped = Math.max(ratio, 0.03);
-    scrollThumbHeight = (window.innerHeight - HEIGHT_OFFSET) * capped;
-    scrollThumbY.style.height = `${scrollThumbHeight}px`;
-    scrollThumbY.style.backgroundColor = '#555555';
   }
 
-  // TODO: thumb still goes below screen.
-  // Prevent the scrollbar from shrinking any further when scrolling past the last row.
-  if (viewportOffset <= fuzzyData.length - viewportRows.length) {
-    let ratio = viewportOffset / fuzzyData.length;
-    const thumbOffset = (window.innerHeight - HEIGHT_OFFSET) * ratio;
+  const shrinkRatio = viewportRows.length / fuzzyData.length;
+  const capped = Math.max(shrinkRatio, 0.03);
+  scrollThumbHeight = (window.innerHeight - HEIGHT_OFFSET) * capped;
+  scrollThumbY.style.height = `${scrollThumbHeight}px`;
+  scrollThumbY.style.backgroundColor = '#555555';
 
-    if (thumbOffset < (window.innerHeight - HEIGHT_OFFSET)) {
-      scrollThumbY.style.transform = `translateY(${thumbOffset}px)`;
-    }
+  let ratio = viewportOffset / fuzzyData.length;
+  const thumbOffset = (window.innerHeight - HEIGHT_OFFSET) * ratio;
+
+  // Prevent the scroll thumb from scrolling any further when scrolling past the last row.
+  if (thumbOffset + (scrollThumbHeight*2) < window.innerHeight - HEIGHT_OFFSET) {
+    scrollThumbY.style.transform = `translateY(${thumbOffset}px)`;
   }
 }
 
@@ -122,8 +119,8 @@ function scrollBy(offset) {
     return;
   }
 
-  updateScrollOffset(scrollOffset + offset);
   updateViewportOffset(Math.floor(scrollOffset/ROW_HEIGHT));
+  updateScrollOffset(scrollOffset + offset);
   updateScrollThumb();
   render();
 }

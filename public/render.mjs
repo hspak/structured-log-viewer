@@ -31,6 +31,8 @@ toggleTimestamp.onchange = () => {
   render();
 };
 
+let totalCountElem = document.getElementById('total-count');
+
 export function populate(msgs) {
   msgs.forEach((msg) => {
     const file = msg.filename;
@@ -52,6 +54,7 @@ export function populate(msgs) {
       lines.push(normalizedContent);
 
       lines.forEach((line) => {
+        console.log(line.message)
         rawData[rawDataLength] = {
           line,
           selected: false,
@@ -59,6 +62,7 @@ export function populate(msgs) {
         rawDataLength += 1;
       });
     });
+    totalCountElem.childNodes[0].nodeValue = `: ${rawDataLength} logs`;
   });
   renderSidenav();
 }
@@ -68,6 +72,11 @@ export function updateFuzzyData(updatedData) {
 }
 
 export function updateViewportOffset(offset) {
+  if (offset >= (fuzzyData.length - viewportRows.length + SPILL_COUNT + 2)) {
+    viewportOffset = fuzzyData.length - viewportRows.length + SPILL_COUNT + 2;
+    return;
+  }
+
   if (offset > 0) {
     viewportOffset = offset;
   } else {
@@ -83,6 +92,7 @@ export function render() {
   filter();
 
   const maxRender = Math.min(viewportRows.length, Math.max(0, fuzzyData.length - viewportOffset));
+  console.log(viewportOffset);
 
   // TODO: this assumption makes scrolling jerky if any logs are expanded
   const rowOffset = scrollOffset % ROW_HEIGHT;
@@ -221,12 +231,13 @@ function showDetails(lineElem, buttonElem, lineRow) {
   })
 
   // The full message always comes last.
-  // TODO: don't clobber multi-line logs
   const rowContainer = document.createElement('div');
   rowContainer.classList.add('message-detail-row');
   const elem = document.createElement('div');
+  const pre = document.createElement('pre');
   const text = document.createTextNode(`${fuzzyData[lineRow].line.message}`);
-  elem.replaceChildren(text);
+  pre.replaceChildren(text);
+  elem.replaceChildren(pre);
   elem.classList.add('message-details');
   elem.classList.add('detail-message');
   detailContainer.appendChild(elem);
