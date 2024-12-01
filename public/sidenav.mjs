@@ -1,5 +1,5 @@
 import { defaultAttrs, MAX_ATTR } from "./constants.mjs";
-import { rawData, updateFuzzyData, render } from "./render.mjs";
+import { fuzzyData, rawData, updateFuzzyData, render, rawDataLength, totalCountElem } from "./render.mjs";
 import { resetScroll, updateScrollThumb } from "./scrollbar.mjs";
 
 let sidenav = document.getElementById("attributes");
@@ -128,6 +128,11 @@ export function filter() {
         })
       : filteredData,
   );
+
+  const countStr = rawDataLength === fuzzyData.length
+    ? `: ${rawDataLength} logs`
+    : `: ${rawDataLength} logs (curr: ${fuzzyData.length})`;
+  totalCountElem.childNodes[0].nodeValue = countStr;
 }
 
 function sortByName(a, b) {

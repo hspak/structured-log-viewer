@@ -3,6 +3,7 @@ import { isPinnedAttr, setupDefaultAttrs,filter, renderSidenav, pinNewAttr } fro
 import { updateScrollThumb } from './scrollbar.mjs';
 
 export let container = document.getElementById('stuff');
+export let totalCountElem = document.getElementById('total-count');
 export let viewportRows = [];
 export let viewportOffset = 0;
 export let scrollOffset = 0;
@@ -10,7 +11,7 @@ export let scrollOffset = 0;
 export let fuzzyData = [];
 export let rawData = [];
 
-let rawDataLength = 0;
+export let rawDataLength = 0;
 
 let showFilename = true;
 let toggleFilename = document.getElementById('hide-filename');
@@ -31,7 +32,6 @@ toggleTimestamp.onchange = () => {
   render();
 };
 
-let totalCountElem = document.getElementById('total-count');
 
 export function populate(msgs) {
   msgs.forEach((msg) => {
@@ -61,7 +61,10 @@ export function populate(msgs) {
         rawDataLength += 1;
       });
     });
-    totalCountElem.childNodes[0].nodeValue = `: ${rawDataLength} logs`;
+  const countStr = rawDataLength === fuzzyData.length
+    ? `: ${rawDataLength} logs`
+    : `: ${rawDataLength} logs (curr: ${fuzzyData.length})`;
+  totalCountElem.childNodes[0].nodeValue = countStr;
   });
   renderSidenav();
 }
