@@ -96,8 +96,8 @@ export function render() {
   const maxRender = Math.min(viewportRows.length, Math.max(0, fuzzyData.length - viewportOffset));
   console.log(viewportOffset);
 
-  // TODO: this assumption makes scrolling jerky if any logs are expanded
-  const rowOffset = scrollOffset % ROW_HEIGHT;
+  // TODO: revisit
+  // const rowOffset = 0;
 
   for (let i=0; i<maxRender; i++) {
     const datum = fuzzyData[i + viewportOffset];
@@ -114,7 +114,7 @@ export function render() {
     }
 
 
-    viewportRows[i].style.transform = `translateY(${-rowOffset}px)`;
+    // viewportRows[i].style.transform = `translateY(${-rowOffset}px)`;
     if (showFilename) {
       viewportRows[i].childNodes[1].childNodes[0].nodeValue = `${datum.line.filename}: `;
     } else {
