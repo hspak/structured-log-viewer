@@ -6,6 +6,11 @@ body {
 
     overflow: hidden;
 }
+
+pre {
+    white-space: pre-wrap;
+}
+
 .main {
     display: flex;
     flex-direction: row;
